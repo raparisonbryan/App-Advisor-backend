@@ -1,4 +1,3 @@
-const { request, response } = require("express");
 const userModel = require("../Models/UserModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
@@ -73,8 +72,7 @@ const signup = async (request, response) => {
     if (userExist) {
         return response.status(400).json({ msg: "Adresse mail déhà utilisée" });
     }
-    const hashedPassword = await bcrypt.hash(input.password, 10);
-    input.password = hashedPassword;
+    input.password = await bcrypt.hash(input.password, 10);
     try {
         const newUser = new userModel(input);
         const result = await newUser.save();

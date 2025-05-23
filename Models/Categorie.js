@@ -1,11 +1,13 @@
-const mongoose = require("mongoose")
-const Outil = require("./Outil")
+const mongoose = require("mongoose");
 
-const categoriesSchema = new mongoose.Schema({
-    nom : {type : String , required : [ true , "nom est required "]} ,
+const categoriesSchema = new mongoose.Schema(
+    {
+    name: { type: String, required: [true, "name is required "] },
     imageURL: { type: String, required: true },
-    outils : {type : mongoose.Schema.Types.ObjectId , ref : "Outil"}
-  }, { versionKey: false });
-  
-  const Categorie = mongoose.model("Categorie", categoriesSchema);
-  module.exports = Categorie;
+    outils: [{ type: mongoose.Schema.Types.ObjectId, ref: "Outil" }],
+  },
+  { versionKey: false }
+);
+
+const Categorie = mongoose.model("Categorie", categoriesSchema);
+module.exports = Categorie;

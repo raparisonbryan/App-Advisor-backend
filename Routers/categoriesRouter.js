@@ -1,24 +1,24 @@
-const express = require("express")
-const router = express.Router() ;
-const categories = require ("../Controllers/categoriesController")
+const express = require("express");
+const router = express.Router();
+const categories = require("../Controllers/categoriesController");
 
 /**
  * @swagger
  * /categories:
  *   get:
- *     summary: Liste toutes les catégories
+ *     summary: Liste toutes les catégories avec leurs outils
  *     tags: [Categories]
  *     responses:
  *       200:
- *         description: Une liste de toutes les catégories
+ *         description: Une liste de toutes les catégories avec leurs outils associés
  */
-router.get("/" , categories.getManyCategories); 
+router.get("/", categories.getManyCategories);
 
 /**
  * @swagger
  * /categories/{id}:
  *   get:
- *     summary: Obtient une catégorie par son ID
+ *     summary: Obtient une catégorie par son ID avec ses outils
  *     tags: [Categories]
  *     parameters:
  *       - in: path
@@ -29,9 +29,9 @@ router.get("/" , categories.getManyCategories);
  *         description: L'ID de la catégorie à obtenir
  *     responses:
  *       200:
- *         description: Une catégorie spécifique
+ *         description: Une catégorie spécifique avec ses outils
  */
-router.get("/:id" , categories.getByIdCategories);
+router.get("/:id", categories.getByIdCategories);
 
 /**
  * @swagger
@@ -45,24 +45,27 @@ router.get("/:id" , categories.getByIdCategories);
  *         application/json:
  *           schema:
  *             type: object
- *             properties: 
+ *             properties:
  *               name:
- *                  type: string
- *               imageURL:
- *                  type: string
- *               outils:
  *                 type: string
+ *               imageURL:
+ *                 type: string
+ *               outils:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Liste des IDs des outils à associer
  *     responses:
- *       200:
+ *       201:
  *         description: La catégorie a été créée
  */
-router.post("/" , categories.postCategories);
+router.post("/", categories.postCategories);
 
 /**
  * @swagger
  * /categories/{id}:
  *   put:
- *     summary: Modifie une catégorie existante par son ID
+ *     summary: Modifie une catégorie existante
  *     tags: [Categories]
  *     parameters:
  *       - in: path
@@ -77,24 +80,58 @@ router.post("/" , categories.postCategories);
  *         application/json:
  *           schema:
  *             type: object
- *             properties: 
+ *             properties:
  *               name:
- *                  type: string
- *               imageURL:
- *                  type: string
- *               outils:
  *                 type: string
+ *               imageURL:
+ *                 type: string
+ *               outils:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Liste des IDs des outils à associer
  *     responses:
  *       200:
  *         description: La catégorie a été mise à jour
  */
-router.put("/:id" , categories.putCategoriesById); 
+router.put("/:id", categories.updateCategoriesById);
+
+/**
+ * @swagger
+ * /categories/{id}/outils:
+ *   put:
+ *     summary: Met à jour les outils associés à une catégorie
+ *     tags: [Categories]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: L'ID de la catégorie
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               outils:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Liste des IDs des outils à associer
+ *     responses:
+ *       200:
+ *         description: Les outils associés à la catégorie ont été mis à jour
+ */
+router.put("/:id/outils", categories.updateCategorieOutils);
 
 /**
  * @swagger
  * /categories/{id}:
  *   delete:
- *     summary: Supprime une catégorie par son ID
+ *     summary: Supprime une catégorie
  *     tags: [Categories]
  *     parameters:
  *       - in: path
@@ -107,6 +144,6 @@ router.put("/:id" , categories.putCategoriesById);
  *       200:
  *         description: La catégorie a été supprimée
  */
-router.delete("/:id" , categories.deleteByIdCategories);
+router.delete("/:id", categories.deleteByIdCategories);
 
-module.exports = router ; 
+module.exports = router;

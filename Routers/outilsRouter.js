@@ -31,7 +31,26 @@ router.get("/" , outils.getManyOutils);
  *       200:
  *         description: Un outil spécifique
  */
-router.get("/:id" , outils.getByIdOutils); 
+router.get("/:id" , outils.getByIdOutils);
+
+/**
+ * @swagger
+ * /outils/{id}/categories:
+ *  get:
+ *    summary: Liste toutes les catégories d'un outil
+ *    tags: [Outils]
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: L'ID de l'outil
+ *    responses:
+ *      200:
+ *        description: Une liste de toutes les catégories de l'outil
+ */
+router.get("/:id/categories" , outils.getOutilCategories);
 
 /**
  * @swagger
@@ -96,7 +115,38 @@ router.post("/" , outils.postOutils);
  *       200:
  *         description: L'outil a été mis à jour
  */
-router.put("/:id" , outils.putOutilsById); 
+router.put("/:id" , outils.updateOutilsById);
+
+/**
+ * @swagger
+ * /outils/{id}/categories:
+ *  put:
+ *    summary: Ajoute une catégorie à un outil
+ *    tags: [Outils]
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: L'ID de l'outil
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              categories:
+ *                type: array
+ *                items:
+ *                  type: string
+ *                description: Liste des IDs des catégories à associer
+ *    responses:
+ *      200:
+ *        description: Les catégories associées à l'outil ont été mises à jour
+ */
+router.put("/:id/categories", outils.updateOutilCategories);
 
 /**
  * @swagger
