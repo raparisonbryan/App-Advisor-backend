@@ -10,9 +10,20 @@ const cors = require('cors');
 const swaggerDocs = require('./swagger');
 const swaggerUI = require('swagger-ui-express');
 
-connectDatabase() ; 
+connectDatabase() ;
 
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'https://app-advisor-frontend-production.up.railway.app',
+    'http://localhost:3000'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 app.get('/', (req, res) => {
   res.send('Hello, Node.js!');

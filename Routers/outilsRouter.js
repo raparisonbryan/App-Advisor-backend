@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const outils = require("../Controllers/outilsController");
+const upload = require("../middleware/upload");
 
 /**
  * @swagger
@@ -79,7 +80,40 @@ router.get("/:id/categories" , outils.getOutilCategories);
  *       200:
  *         description: L'outil a été créé
  */
-router.post("/" , outils.postOutils); 
+router.post("/", upload.single("image"), outils.postOutils);
+
+/**
+ * @swagger
+ * /outils/many:
+ *   post:
+ *     summary: Ajoute plusieurs outils
+ *     tags: [Outils]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *                 imageURL:
+ *                   type: string
+ *                 avis:
+ *                   type: string
+ *                 categories:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *     responses:
+ *       200:
+ *         description: Les outils ont été créés
+ */
+router.post("/many", outils.postManyOutils);
 
 /**
  * @swagger
@@ -115,7 +149,7 @@ router.post("/" , outils.postOutils);
  *       200:
  *         description: L'outil a été mis à jour
  */
-router.put("/:id" , outils.updateOutilsById);
+router.put("/:id", upload.single("image"), outils.updateOutilsById);
 
 /**
  * @swagger
