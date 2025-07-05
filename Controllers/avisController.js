@@ -26,8 +26,8 @@ const getByIdAvis = async (request, response) => {
 const getAvisByOutilId = async (request, response) => {
     try {
         const result = await avisModel.find({ outils: request.params.id }).populate('user', 'name').populate('outils', 'name imageURL _id');
-        if (!result) {
-            return response.status(404).send('Avis not found');
+        if (result.length === 0) {
+            return response.status(404).json({ error: 'Aucun avis trouvé pour cet outil' });
         }
         response.send(result);
     } catch (error) {
@@ -59,20 +59,41 @@ const postAvis = async (req, res) => {
 };
 
 const putAvisById = async (request, response) => {
-    const input = request.body;
-    const result = await avisModel.findByIdAndUpdate(request.params.id, input, { new: true });
-    response.send(result);
+    try {
+        const input = request.body;
+        const result = await avisModel.findByIdAndUpdate(request.params.id, input, { new: true });
+        if (!result) {
+            return response.status(404).json({ error: "Avis non trouvé" });
+        }
+        response.send(result);
+    } catch (error) {
+        console.log(error);
+        response.status(500).json({ error: error.message });
+    }
 }
 
 const deleteManyAvis = async (request, response) => {
-    const input = request.body;
-    const result = await avisModel.deleteMany(input);
-    response.send(result);
+    try {
+        const input = request.body;
+        const result = await avisModel.deleteMany(input);
+        response.send(result);
+    } catch (error) {
+        console.log(error);
+        response.status(500).json({ error: error.message });
+    }
 }
 
 const deleteByIdAvis = async (request, response) => {
-    const result = await avisModel.findByIdAndDelete(request.params.id);
-    response.send(result);
+    try {
+        const result = await avisModel.findByIdAndDelete(request.params.id);
+        if (!result) {
+            return response.status(404).json({ error: "Avis non trouvé" });
+        }
+        response.send(result);
+    } catch (error) {
+        console.log(error);
+        response.status(500).json({ error: error.message });
+    }
 }
 
 let avis = {

@@ -67,18 +67,15 @@ const deleteByIduser = async (request, response) => {
 }
 
 const signup = async (request, response) => {
-    let input = request.body;
-    const userExist = await userModel.findOne({ email: input.email });
-    if (userExist) {
-        return response.status(400).json({ msg: "Adresse mail déhà utilisée" });
-    }
-    input.password = await bcrypt.hash(input.password, 10);
     try {
+        let input = request.body;
+        input.password = await bcrypt.hash(input.password, 10);
         const newUser = new userModel(input);
         const result = await newUser.save();
         return response.status(201).json(result);
     } catch (error) {
-        return response.status(500).json({ error: error.message });
+        console.error('Erreur lors de l\'inscription:', error);
+        return response.status(500).json({ msg: "Erreur lors de l'inscription", error: error.message });
     }
 };
 

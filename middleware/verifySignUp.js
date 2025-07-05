@@ -1,20 +1,20 @@
-const userModel = require("../Models/UserModel"); 
+const userModel = require("../Models/UserModel");
 
 const checkDuplicateUsernameOrEmail = async (req, res, next) => {
   try {
-    const userByName = await userModel.findOne({ username: req.body.name });
+    const userByName = await userModel.findOne({ name: req.body.name });
     if (userByName) {
-      return res.status(400).send({ message: "Nom d'utilisateur déjà utilisé" });
+      return res.status(400).json({ msg: "Nom d'utilisateur déjà utilisé" });
     }
 
     const userByEmail = await userModel.findOne({ email: req.body.email });
     if (userByEmail) {
-      return res.status(400).send({ message: "Email déjà utilisé" });
+      return res.status(400).json({ msg: "Adresse mail déjà utilisée" });
     }
 
     next();
   } catch (err) {
-    res.status(500).send({ message: err.message });
+    res.status(500).json({ msg: err.message });
   }
 };
 

@@ -17,9 +17,11 @@ const getManyCategories = async (request, response) => {
 const getByIdCategories = async (request, response) => {
   try {
     const result = await categoriesModel
-      .findById(request.params.id)
-      .populate("outils", "name description imageURL");
-    console.log(result);
+        .findById(request.params.id)
+        .populate("outils", "name description imageURL");
+    if (!result) {
+      return response.status(404).json({ error: "Catégorie non trouvée" });
+    }
     response.send(result);
   } catch (error) {
     console.log(error);
@@ -34,6 +36,7 @@ const postCategories = async (request, response) => {
     const savedCategory = await category.save();
     response.status(201).send(savedCategory);
   } catch (error) {
+    console.log(error);
     response.status(500).json({ error: error.message });
   }
 };
@@ -42,10 +45,14 @@ const updateCategoriesById = async (request, response) => {
   try {
     const input = request.body;
     const result = await categoriesModel
-      .findByIdAndUpdate(request.params.id, input, { new: true })
-      .populate("outils", "name description imageURL");
+        .findByIdAndUpdate(request.params.id, input, { new: true })
+        .populate("outils", "name description imageURL");
+    if (!result) {
+      return response.status(404).json({ error: "Catégorie non trouvée" });
+    }
     response.send(result);
   } catch (error) {
+    console.log(error);
     response.status(500).json({ error: error.message });
   }
 };
@@ -102,8 +109,12 @@ const updateCategorieOutils = async (req, res) => {
 const deleteByIdCategories = async (request, response) => {
   try {
     const result = await categoriesModel.findByIdAndDelete(request.params.id);
+    if (!result) {
+      return response.status(404).json({ error: "Catégorie non trouvée" });
+    }
     response.send(result);
   } catch (error) {
+    console.log(error);
     response.status(500).json({ error: error.message });
   }
 };

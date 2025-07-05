@@ -2,9 +2,9 @@ const express = require("express");
 const axios = require("axios");
 const router = express.Router();
 
-const PYTHON_API_URL = "https://app-advisor-llm-production.up.railway.app/generate";
+const PYTHON_API_URL = process.env.CHAT_API_URL ;
 
-router.post("/generate", async (req, res) => {
+router.post("/chat", async (req, res) => {
     try {
         const { prompt } = req.body;
 
