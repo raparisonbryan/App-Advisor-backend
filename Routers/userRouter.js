@@ -3,6 +3,19 @@ const router = express.Router();
 const user = require("../Controllers/userController");
 const verifySignUp = require("../middleware/verifySignUp");
 const passwordReset = require("../middleware/passwordReset");
+const authJwt = require("../middleware/authJwt");
+
+/**
+ * @swagger
+ * /user/me:
+ *   get:
+ *     summary: Récupère le profil de l'utilisateur connecté
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: Profil utilisateur avec statut admin
+ */
+router.get("/me", authJwt.verifyToken, user.getCurrentUser);
 
 /**
  * @swagger
@@ -117,7 +130,11 @@ router.post("/reset-password/:token",
  *       200:
  *         description: Une liste de tous les utilisateurs
  */
-router.get("/", user.getManyuser);
+router.get("/",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    user.getManyUser
+);
 
 /**
  * @swagger
@@ -144,7 +161,11 @@ router.get("/", user.getManyuser);
  *       200:
  *         description: L'utilisateur a été créé
  */
-router.post("/", user.postUser);
+router.post("/",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    user.postUser
+);
 
 /**
  * @swagger
@@ -163,7 +184,7 @@ router.post("/", user.postUser);
  *       200:
  *         description: Un utilisateur spécifique
  */
-router.get("/:id", user.getByIduser);
+router.get("/:id", user.getByIdUser);
 
 /**
  * @swagger
@@ -182,7 +203,11 @@ router.get("/:id", user.getByIduser);
  *       200:
  *         description: L'utilisateur a été mis à jour
  */
-router.put("/:id", user.putUserById);
+router.put("/:id",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    user.putUserById
+);
 
 /**
  * @swagger
@@ -201,6 +226,10 @@ router.put("/:id", user.putUserById);
  *       200:
  *         description: L'utilisateur a été supprimé
  */
-router.delete("/:id", user.deleteByIduser);
+router.delete("/:id",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    user.deleteByIdUser
+);
 
 module.exports = router;

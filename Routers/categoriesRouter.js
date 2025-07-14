@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const categories = require("../Controllers/categoriesController");
+const authJwt = require("../middleware/authJwt");
 
 /**
  * @swagger
@@ -59,7 +60,11 @@ router.get("/:id", categories.getByIdCategories);
  *       201:
  *         description: La catégorie a été créée
  */
-router.post("/", categories.postCategories);
+router.post("/",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    categories.postCategories
+);
 
 /**
  * @swagger
@@ -94,7 +99,11 @@ router.post("/", categories.postCategories);
  *       200:
  *         description: La catégorie a été mise à jour
  */
-router.put("/:id", categories.updateCategoriesById);
+router.put("/:id",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    categories.updateCategoriesById
+);
 
 /**
  * @swagger
@@ -125,7 +134,11 @@ router.put("/:id", categories.updateCategoriesById);
  *       200:
  *         description: Les outils associés à la catégorie ont été mis à jour
  */
-router.put("/:id/outils", categories.updateCategorieOutils);
+router.put("/:id/outils",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    categories.updateCategorieOutils
+);
 
 /**
  * @swagger
@@ -144,6 +157,10 @@ router.put("/:id/outils", categories.updateCategorieOutils);
  *       200:
  *         description: La catégorie a été supprimée
  */
-router.delete("/:id", categories.deleteByIdCategories);
+router.delete("/:id",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    categories.deleteByIdCategories
+);
 
 module.exports = router;

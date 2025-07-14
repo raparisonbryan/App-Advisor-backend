@@ -1,11 +1,10 @@
 require('dotenv').config()
 
 const jwt = require("jsonwebtoken");
+const User = require("../Models/UserModel");
 const secret = process.env.JWT_SECRET;
-// const db = require("../Models");
-// const User = db.user;
 
-verifyToken = (req, res, next) => {
+const verifyToken = (req, res, next) => {
   let token = req.headers["authorization"];
   
   if (token && token.startsWith("Bearer ")) {
@@ -28,40 +27,25 @@ verifyToken = (req, res, next) => {
     });
 };
 
-// isAdmin = (req, res, next) => {
-//   User.findById(req.userId).exec((err, user) => {
-//     if (err) {
-//       res.status(500).send({ message: err });
-//       return;
-//     }
+const isAdmin = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return res.status(404).send({ message: "Utilisateur non trouvé!" });
+        }
 
-//     Role.find(
-//       {
-//         _id: { $in: user.roles }
-//       },
-//       (err, roles) => {
-//         if (err) {
-//           res.status(500).send({ message: err });
-//           return;
-//         }
+        if (!user.Admin) {
+            return res.status(403).send({ message: "Accès admin requis!" });
+        }
 
-//         for (let i = 0; i < roles.length; i++) {
-//           if (roles[i].name === "admin") {
-//             next();
-//             return;
-//           }
-//         }
-
-//         res.status(403).send({ message: "Require Admin Role!" });
-//         return;
-//       }
-//     );
-//   });
-// };
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+};
 
 const authJwt = {
     verifyToken,
-    // isAdmin,
-
+    isAdmin,
 };
-  module.exports = authJwt;
+module.exports = authJwt;

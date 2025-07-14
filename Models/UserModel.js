@@ -9,5 +9,10 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: Date
 }, { versionKey: false });
 
+userSchema.pre('findOneAndDelete', async function() {
+  const userId = this.getQuery()._id;
+  await mongoose.model('Avis').deleteMany({ user: userId });
+});
+
 const UserModel = mongoose.model("UserModel", userSchema);
 module.exports = UserModel;

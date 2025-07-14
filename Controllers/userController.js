@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 const secret = process.env.JWT_SECRET;
 
-const getManyuser = async (request, response) => {
+const getManyUser = async (request, response) => {
     try {
         const result = await userModel.find();
         response.send(result);
@@ -13,16 +13,16 @@ const getManyuser = async (request, response) => {
     }
 }
 
-const getByIduser = async (request, response) => {
+const getByIdUser = async (request, response) => {
     try {
       const result = await userModel.findById(request.params.id);
       if (!result) {
-        return response.status(404).send('User not found');
+        return response.status(404).send('Utilisateur introuvable');
       }
       response.send(result);
     } catch (error) {
       console.error(error);
-      response.status(500).send('An error occurred');
+      response.status(500).send('Une erreur est survenue lors de la récupération de l\'utilisateur');
     }
 };
   
@@ -55,15 +55,27 @@ const putUserById = async (request, response) => {
     response.send(result);
 }
 
-const deleteManyuser = async (request, response) => {
+const deleteManyUser = async (request, response) => {
     const input = request.body;
     const result = await userModel.deleteMany(input);
     response.send(result);
 }
 
-const deleteByIduser = async (request, response) => {
-    const result = await userModel.findByIdAndDelete(request.params.id);
-    response.send(result);
+const deleteByIdUser = async (request, response) => {
+    try {
+        const userId = request.params.id;
+        await require("../Models/Avis").deleteMany({ user: userId });
+        const result = await userModel.findByIdAndDelete(userId);
+
+        if (!result) {
+            return response.status(404).json({ error: "Utilisateur non trouvé" });
+        }
+
+        response.json({ message: "Utilisateur et ses avis supprimés avec succès" });
+    } catch (error) {
+        console.error(error);
+        response.status(500).json({ error: error.message });
+    }
 }
 
 const signup = async (request, response) => {
@@ -94,31 +106,47 @@ const signin = async (request, response) => {
     });
     response.cookie("token", token, { 
         httpOnly: true,
+        sameSite: 'strict',
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
      }); 
     return response.status(200).json({
-        user: userExist,
+        user: {
+            _id: userExist._id,
+            name: userExist.name,
+            email: userExist.email,
+            Admin: userExist.Admin
+        },
         token,
+        message: "Connexion réussie"
     });
 }
 
-async function me(request, response) {
-    const user = request.user;
-    response.send(user);
-}
+const getCurrentUser = async (request, response) => {
+    try {
+        const user = await userModel.findById(request.userId).select('-password');
+        response.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            Admin: user.Admin
+        });
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+};
 
 const userController = {
-    getManyuser,
-    getByIduser,
+    getManyUser,
+    getByIdUser,
     postUser,
     putManyUser,
     putUserById,
-    deleteManyuser,
-    deleteByIduser,
+    deleteManyUser,
+    deleteByIdUser,
     getBymailUser,
     signin,
     signup,
-    me
+    getCurrentUser
 };
 
 module.exports = userController;

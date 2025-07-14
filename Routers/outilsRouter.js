@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const outils = require("../Controllers/outilsController");
 const upload = require("../middleware/upload");
+const authJwt = require("../middleware/authJwt");
 
 /**
  * @swagger
@@ -80,7 +81,12 @@ router.get("/:id/categories" , outils.getOutilCategories);
  *       200:
  *         description: L'outil a été créé
  */
-router.post("/", upload.single("image"), outils.postOutils);
+router.post("/",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    upload.single("image"),
+    outils.postOutils
+);
 
 /**
  * @swagger
@@ -113,7 +119,11 @@ router.post("/", upload.single("image"), outils.postOutils);
  *       200:
  *         description: Les outils ont été créés
  */
-router.post("/many", outils.postManyOutils);
+router.post("/many",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    outils.postManyOutils
+);
 
 /**
  * @swagger
@@ -149,7 +159,12 @@ router.post("/many", outils.postManyOutils);
  *       200:
  *         description: L'outil a été mis à jour
  */
-router.put("/:id", upload.single("image"), outils.updateOutilsById);
+router.put("/:id",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    upload.single("image"),
+    outils.updateOutilsById
+);
 
 /**
  * @swagger
@@ -180,7 +195,11 @@ router.put("/:id", upload.single("image"), outils.updateOutilsById);
  *      200:
  *        description: Les catégories associées à l'outil ont été mises à jour
  */
-router.put("/:id/categories", outils.updateOutilCategories);
+router.put("/:id/categories",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    outils.updateOutilCategories
+);
 
 /**
  * @swagger
@@ -199,6 +218,10 @@ router.put("/:id/categories", outils.updateOutilCategories);
  *       200:
  *         description: L'outil a été supprimé
  */
-router.delete("/:id" , outils.deleteByIdOutils);
+router.delete("/:id",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    outils.deleteByIdOutils
+);
 
 module.exports = router ;
