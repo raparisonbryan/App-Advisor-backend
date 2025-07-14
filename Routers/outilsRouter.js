@@ -127,6 +127,75 @@ router.post("/many",
 
 /**
  * @swagger
+ * /outils/sync-avis:
+ *   post:
+ *     summary: Synchronise les avis avec les outils
+ *     tags: [Outils]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Le token d'authentification de l'utilisateur
+ *     responses:
+ *       200:
+ *         description: Les avis ont été synchronisés avec succès
+ */
+router.post("/sync-avis",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    outils.syncAvisToOutils
+);
+
+/**
+ * @swagger
+ * /outils/sync-moyennes:
+ *   post:
+ *     summary: Migration pour ajouter les moyennes aux outils existants
+ *     tags: [Outils]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Le token d'authentification de l'utilisateur
+ *     responses:
+ *       200:
+ *         description: Migration des moyennes terminée avec succès
+ */
+router.post("/sync-moyennes",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    outils.syncMoyennes
+);
+
+/**
+ * @swagger
+ * /outils/cleanup:
+ *   post:
+ *     summary: Nettoie les données orphelines (avis sans outils)
+ *     tags: [Outils]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Le token d'authentification de l'utilisateur
+ *     responses:
+ *       200:
+ *         description: Nettoyage terminé avec succès
+ */
+router.post("/cleanup",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    outils.cleanupData
+);
+
+/**
+ * @swagger
  * /outils/{id}:
  *   put:
  *     summary: Modifie un outil existant par son ID

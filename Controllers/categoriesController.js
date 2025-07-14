@@ -5,8 +5,8 @@ const {startSession} = require("mongoose");
 const getManyCategories = async (request, response) => {
   try {
     const result = await categoriesModel
-      .find()
-      .populate("outils", "name description imageURL");
+        .find()
+        .populate("outils");
     response.send(result);
   } catch (error) {
     console.log(error);
