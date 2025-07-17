@@ -40,10 +40,12 @@ router.get("/me", authJwt.verifyToken, user.getCurrentUser);
  *       200:
  *         description: L'utilisateur a été inscrit
  */
-router.post("/signup",
-    verifySignUp.validatePassword,
-    verifySignUp.checkDuplicateUsernameOrEmail,
-    user.signup
+router.post(
+  "/signup",
+  verifySignUp.validateEmail,
+  verifySignUp.validatePassword,
+  verifySignUp.checkDuplicateUsernameOrEmail,
+  user.signup
 );
 
 /**
@@ -88,7 +90,11 @@ router.post("/signin", user.signin);
  *       200:
  *         description: Email de réinitialisation envoyé
  */
-router.post("/forgot-password", passwordReset.forgotPassword);
+router.post(
+  "/forgot-password",
+  verifySignUp.validateEmail,
+  passwordReset.forgotPassword
+);
 
 /**
  * @swagger
@@ -115,10 +121,35 @@ router.post("/forgot-password", passwordReset.forgotPassword);
  *       200:
  *         description: Mot de passe réinitialisé avec succès
  */
-router.post("/reset-password/:token",
-    verifySignUp.validatePassword,
-    passwordReset.resetPassword
+router.post(
+  "/reset-password/:token",
+  verifySignUp.validatePassword,
+  passwordReset.resetPassword
 );
+
+/**
+ * @swagger
+ * /user/refresh-token:
+ *   post:
+ *     summary: Rafraîchit le token d'accès à partir du refresh token
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: Nouveau token d'accès généré
+ */
+router.post("/refresh-token", user.refreshToken);
+
+/**
+ * @swagger
+ * /user/logout:
+ *   post:
+ *     summary: Déconnecte l'utilisateur et supprime le refresh token
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: Déconnexion réussie
+ */
+router.post("/logout", user.logout);
 
 /**
  * @swagger
@@ -130,11 +161,7 @@ router.post("/reset-password/:token",
  *       200:
  *         description: Une liste de tous les utilisateurs
  */
-router.get("/",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    user.getManyUser
-);
+router.get("/", authJwt.verifyToken, authJwt.isAdmin, user.getManyUser);
 
 /**
  * @swagger
@@ -161,11 +188,7 @@ router.get("/",
  *       200:
  *         description: L'utilisateur a été créé
  */
-router.post("/",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    user.postUser
-);
+router.post("/", authJwt.verifyToken, authJwt.isAdmin, user.postUser);
 
 /**
  * @swagger
@@ -203,11 +226,7 @@ router.get("/:id", user.getByIdUser);
  *       200:
  *         description: L'utilisateur a été mis à jour
  */
-router.put("/:id",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    user.putUserById
-);
+router.put("/:id", authJwt.verifyToken, authJwt.isAdmin, user.putUserById);
 
 /**
  * @swagger
@@ -226,10 +245,11 @@ router.put("/:id",
  *       200:
  *         description: L'utilisateur a été supprimé
  */
-router.delete("/:id",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    user.deleteByIdUser
+router.delete(
+  "/:id",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  user.deleteByIdUser
 );
 
 module.exports = router;

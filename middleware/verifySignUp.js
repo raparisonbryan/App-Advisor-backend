@@ -5,13 +5,13 @@ const validatePassword = (req, res, next) => {
 
   if (!password) {
     return res.status(400).json({
-      msg: "Le mot de passe est requis"
+      msg: "Le mot de passe est requis",
     });
   }
 
   if (password.length < 8) {
     return res.status(400).json({
-      msg: "Le mot de passe doit contenir au moins 8 caractères"
+      msg: "Le mot de passe doit contenir au moins 8 caractères",
     });
   }
 
@@ -29,7 +29,7 @@ const validatePassword = (req, res, next) => {
 
   if (errors.length > 0) {
     return res.status(400).json({
-      msg: `Le mot de passe doit contenir : ${errors.join(", ")}`
+      msg: `Le mot de passe doit contenir : ${errors.join(", ")}`,
     });
   }
 
@@ -54,9 +54,23 @@ const checkDuplicateUsernameOrEmail = async (req, res, next) => {
   }
 };
 
+const validateEmail = (req, res, next) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ msg: "L'email est requis" });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ msg: "Format d'email invalide" });
+  }
+  next();
+};
+
 const verifySignUp = {
   checkDuplicateUsernameOrEmail,
-  validatePassword
+  validatePassword,
+  validateEmail,
 };
 
 module.exports = verifySignUp;
