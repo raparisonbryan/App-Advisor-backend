@@ -18,6 +18,7 @@ const corsOptions = {
   origin: [
     "https://app-advisor-frontend-production.up.railway.app",
     "https://app-advisor-llm-production.up.railway.app",
+    "backend-dev-developpment.up.railway.app",
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5005",
