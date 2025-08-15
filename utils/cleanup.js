@@ -11,7 +11,6 @@ const cleanupOrphanedAvis = async () => {
         if (avisToDelete.length > 0) {
             const idsToDelete = avisToDelete.map(avis => avis._id);
             await avisModel.deleteMany({ _id: { $in: idsToDelete } });
-            console.log(`${avisToDelete.length} avis orphelins supprimés`);
         }
 
         return { deletedCount: avisToDelete.length };

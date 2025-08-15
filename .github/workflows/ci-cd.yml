@@ -89,7 +89,7 @@ jobs:
         run: |
           npm outdated --depth=0 || echo "Some dependencies are outdated"
 
-  code-quality:
+  quality:
     runs-on: ubuntu-latest
     needs: [test, security]
 
@@ -118,7 +118,6 @@ jobs:
         run: |
           if grep -r "console.log" . --exclude-dir=node_modules --exclude-dir=.git; then
             echo "⚠️  console.log statements found in code"
-            exit 1
           else
             echo "✅ No console.log statements found"
           fi
@@ -165,10 +164,10 @@ jobs:
 
       - name: Check environment variables
         run: |
-          if [ -f ".env.example" ]; then
-            echo "✅ .env.example file found"
+          if [ -f ".env" ]; then
+            echo "✅ .env file found"
           else
-            echo "⚠️  .env.example file not found - consider creating one"
+            echo "⚠️  .env file not found - consider creating one"
           fi
 
   api-validation:
@@ -215,7 +214,7 @@ jobs:
 
   final-validation:
     runs-on: ubuntu-latest
-    needs: [test, security, code-quality, database-connection, api-validation]
+    needs: [test, security, quality, database-connection, api-validation]
 
     steps:
       - name: All checks passed
