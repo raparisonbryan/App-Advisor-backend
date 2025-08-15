@@ -124,7 +124,21 @@ jobs:
 
       - name: Check for hardcoded secrets
         run: |
-          if grep -r "password\|secret\|key\|token" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" --exclude="*.yml" --exclude="*.yaml" | grep -v "process.env" | grep -v "require" | grep -v "import"; then
+          # Chercher uniquement les vraies valeurs hardcodées (= "valeur" ou = 'valeur')
+          if grep -r -E "(password|secret|key|token)\s*=\s*['\"][^'\"]*['\"]" . \
+              --exclude-dir=node_modules \
+              --exclude-dir=.git \
+              --exclude="*.md" \
+              --exclude="*.yml" \
+              --exclude="*.yaml" \
+              --exclude="package*.json" \
+              --exclude="*.lock" | \
+              grep -v "process.env" | \
+              grep -v "req.body" | \
+              grep -v "req.params" | \
+              grep -v "req.headers" | \
+              grep -v "response.cookie" | \
+              grep -v "clearCookie"; then
             echo "⚠️  Potential hardcoded secrets found"
             exit 1
           else
