@@ -219,12 +219,4 @@ jobs:
     steps:
       - name: All checks passed
         run: |
-          echo "✅ Tous les contrôles qualité sont passés"
-          echo "🚀 Backend prêt pour déploiement"
-          echo ""
-          echo "📋 Résumé des vérifications:"
-          echo "  - Tests: ✅"
-          echo "  - Sécurité: ✅"
-          echo "  - Qualité du code: ✅"
-          echo "  - Connexion base de données: ✅"
-          echo "  - Validation API: ✅"
+          echo "✅ All checks passed successfully!"

@@ -10,7 +10,7 @@ const getManyAvis = async (request, response) => {
         console.log(error);
         response.status(500).json({ error: error.message });
     }
-}
+};
 
 const getByIdAvis = async (request, response) => {
     try {
@@ -23,7 +23,7 @@ const getByIdAvis = async (request, response) => {
         console.log(error);
         response.status(500).json({ error: error.message });
     }
-}
+};
 
 const getAvisByOutilId = async (request, response) => {
     try {
@@ -36,7 +36,7 @@ const getAvisByOutilId = async (request, response) => {
         console.log(error);
         response.status(500).json({ error: error.message });
     }
-}
+};
 
 const postAvis = async (req, res) => {
     try {
@@ -119,7 +119,7 @@ const deleteManyAvis = async (request, response) => {
         console.log(error);
         response.status(500).json({ error: error.message });
     }
-}
+};
 
 const deleteByIdAvis = async (request, response) => {
     try {
