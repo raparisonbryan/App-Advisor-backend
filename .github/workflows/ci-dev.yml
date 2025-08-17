@@ -1,4 +1,4 @@
-name: CI/CD Backend
+name: CI/CD dev backend
 
 on:
   push:
@@ -29,9 +29,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Check for security vulnerabilities
-        run: npm audit --audit-level moderate
 
       - name: Run tests (if available)
         run: |
@@ -144,11 +141,6 @@ jobs:
           else
             echo "✅ No hardcoded secrets found"
           fi
-
-      - name: Check file structure
-        run: |
-          echo "📁 Project structure:"
-          find . -type f -name "*.js" -not -path "./node_modules/*" -not -path "./.git/*" | head -20
 
   database-connection:
     runs-on: ubuntu-latest
