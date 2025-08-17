@@ -30,12 +30,67 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests (if available)
+      - name: Run tests with coverage threshold
         run: |
           if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
-            npm test
+            echo "🧪 Running tests with coverage threshold..."
+            
+            # Exécuter les tests avec couverture et seuil de réussite
+            npm test -- --coverage --coverageThreshold='{"global":{"statements":80,"branches":70,"functions":80,"lines":80}}' --passWithNoTests=false
+            
+            echo "✅ Tests completed successfully with 80%+ coverage threshold"
           else
-            echo "No tests configured in package.json"
+            echo "❌ No tests configured in package.json"
+            exit 1
+          fi
+
+      - name: Verify test success rate
+        run: |
+          echo "📊 Verifying test success rate..."
+
+          # Exécuter les tests et capturer le résultat
+          TEST_OUTPUT=$(npm test -- --silent --passWithNoTests=false 2>&1 || true)
+
+          # Extraire le nombre de tests qui passent et le total
+          if echo "$TEST_OUTPUT" | grep -q "Test Suites:"; then
+            # Extraire les statistiques des tests
+            TOTAL_TESTS=$(echo "$TEST_OUTPUT" | grep "Tests:" | tail -1 | sed 's/.*Tests: *\([0-9]*\) failed, \([0-9]*\) passed.*/\1+\2/' | bc)
+            PASSED_TESTS=$(echo "$TEST_OUTPUT" | grep "Tests:" | tail -1 | sed 's/.*Tests: *\([0-9]*\) failed, \([0-9]*\) passed.*/\2/')
+            
+            if [ -n "$TOTAL_TESTS" ] && [ -n "$PASSED_TESTS" ] && [ "$TOTAL_TESTS" -gt 0 ]; then
+              SUCCESS_RATE=$(echo "scale=1; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)
+              echo "📈 Test Results: $PASSED_TESTS/$TOTAL_TESTS tests passed"
+              echo "📊 Success Rate: $SUCCESS_RATE%"
+              
+              # Vérifier que le taux de réussite est au moins de 80%
+              if (( $(echo "$SUCCESS_RATE >= 80" | bc -l) )); then
+                echo "✅ Test success rate ($SUCCESS_RATE%) meets the 80% threshold"
+              else
+                echo "❌ Test success rate ($SUCCESS_RATE%) is below the 80% threshold"
+                echo "🚨 CI will fail - tests must pass at least 80% to proceed"
+                exit 1
+              fi
+            else
+              echo "⚠️  Could not parse test results"
+              exit 1
+            fi
+          else
+            echo "⚠️  No test output found"
+            exit 1
+          fi
+
+      - name: Generate coverage report
+        run: |
+          echo "📋 Generating detailed coverage report..."
+
+          # Exécuter les tests avec couverture détaillée
+          npm test -- --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=html
+
+          echo "📊 Coverage report generated successfully"
+
+          # Afficher un résumé de la couverture
+          if [ -f "coverage/lcov-report/index.html" ]; then
+            echo "✅ HTML coverage report available in coverage/lcov-report/index.html"
           fi
 
       - name: Check server startup
