@@ -8,10 +8,8 @@ const {
   mockRequest,
   mockResponse,
   expectErrorResponse,
-  expectSuccessResponse,
 } = require("../helpers/testUtils");
 
-// Mock des modèles
 jest.mock("../../Models/UserModel");
 jest.mock("../../Models/Avis");
 jest.mock("bcrypt");

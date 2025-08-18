@@ -34,10 +34,7 @@ jobs:
         run: |
           if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
             echo "🧪 Running tests with coverage threshold..."
-            
-            # Exécuter les tests avec couverture et seuil de réussite
             npm test -- --coverage --coverageThreshold='{"global":{"statements":80,"branches":70,"functions":80,"lines":80}}' --passWithNoTests=false
-            
             echo "✅ Tests completed successfully with 80%+ coverage threshold"
           else
             echo "❌ No tests configured in package.json"
@@ -77,20 +74,6 @@ jobs:
           else
             echo "⚠️  No test output found"
             exit 1
-          fi
-
-      - name: Generate coverage report
-        run: |
-          echo "📋 Generating detailed coverage report..."
-
-          # Exécuter les tests avec couverture détaillée
-          npm test -- --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=html
-
-          echo "📊 Coverage report generated successfully"
-
-          # Afficher un résumé de la couverture
-          if [ -f "coverage/lcov-report/index.html" ]; then
-            echo "✅ HTML coverage report available in coverage/lcov-report/index.html"
           fi
 
       - name: Check server startup

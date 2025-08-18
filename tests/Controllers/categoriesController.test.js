@@ -5,10 +5,8 @@ const {
   mockRequest,
   mockResponse,
   expectErrorResponse,
-  expectSuccessResponse,
 } = require("../helpers/testUtils");
 
-// Mock des modèles
 jest.mock("../../Models/Categorie");
 
 describe("CategoriesController", () => {

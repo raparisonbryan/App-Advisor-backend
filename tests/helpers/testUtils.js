@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 
 /**
  * Crée un token JWT de test
@@ -134,9 +133,7 @@ const expectSuccessResponse = (response, expectedStatus) => {
   expect(response.status).toHaveBeenCalledWith(expectedStatus);
 };
 
-// Fonctions utilitaires pour configurer les mocks
 const setupMocks = () => {
-  // Mock de JWT
   const jwt = require("jsonwebtoken");
   jwt.verify.mockImplementation((token, secret, callback) => {
     if (token === "valid-token") {
@@ -148,52 +145,44 @@ const setupMocks = () => {
 
   jwt.sign.mockReturnValue("mock-jwt-token");
 
-  // Mock de bcrypt
   const bcrypt = require("bcrypt");
   bcrypt.hash.mockResolvedValue("hashedPassword123");
   bcrypt.compare.mockResolvedValue(true);
 
-  // Mock des modèles Mongoose avec des valeurs par défaut
   const UserModel = require("../../Models/UserModel");
   const AvisModel = require("../../Models/Avis");
   const OutilModel = require("../../Models/Outil");
   const CategorieModel = require("../../Models/Categorie");
 
-  // Configuration des mocks UserModel
   UserModel.find.mockResolvedValue([]);
   UserModel.findById.mockResolvedValue(null);
   UserModel.findOne.mockResolvedValue(null);
   UserModel.create.mockResolvedValue({ _id: "1", name: "Test User" });
   UserModel.save.mockResolvedValue({ _id: "1", name: "Test User" });
 
-  // Configuration des mocks AvisModel
   AvisModel.find.mockResolvedValue([]);
   AvisModel.findById.mockResolvedValue(null);
   AvisModel.create.mockResolvedValue({ _id: "1", note: 15 });
   AvisModel.save.mockResolvedValue({ _id: "1", note: 15 });
 
-  // Configuration des mocks OutilModel
   OutilModel.find.mockResolvedValue([]);
   OutilModel.findById.mockResolvedValue(null);
   OutilModel.create.mockResolvedValue({ _id: "1", name: "Test Tool" });
   OutilModel.save.mockResolvedValue({ _id: "1", name: "Test Tool" });
 
-  // Configuration des mocks CategorieModel
   CategorieModel.find.mockResolvedValue([]);
   CategorieModel.findById.mockResolvedValue(null);
   CategorieModel.create.mockResolvedValue({ _id: "1", name: "Test Category" });
   CategorieModel.save.mockResolvedValue({ _id: "1", name: "Test Category" });
 
-  // Mock de la fonction calculerMoyennesOutil
   const { calculerMoyennesOutil } = require("../../utils/statistiques");
   if (calculerMoyennesOutil) {
     calculerMoyennesOutil.mockResolvedValue();
   }
 };
 
-// Fonction pour créer des objets de requête mockés
 const createMockRequest = (overrides = {}) => {
-  const req = {
+  return {
     body: {},
     params: {},
     query: {},
@@ -202,24 +191,19 @@ const createMockRequest = (overrides = {}) => {
     file: null,
     ...overrides,
   };
-  return req;
 };
 
-// Fonction pour créer des objets de réponse mockés
 const createMockResponse = () => {
-  const res = {
+  return {
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
     send: jest.fn().mockReturnThis(),
     end: jest.fn().mockReturnThis(),
   };
-  return res;
 };
 
-// Fonction pour créer des objets next mockés
 const createMockNext = () => jest.fn();
 
-// Export des nouvelles fonctions
 module.exports = {
   generateTestToken,
   createTestUserData,

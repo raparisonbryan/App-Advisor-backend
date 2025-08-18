@@ -5,7 +5,6 @@ const avisRouter = require("../../Routers/avisRouter");
 const outilsRouter = require("../../Routers/outilsRouter");
 const categoriesRouter = require("../../Routers/categoriesRouter");
 
-// Mock des middlewares d'authentification
 jest.mock("../../middleware/authJwt", () => ({
   verifyToken: jest.fn((req, res, next) => {
     req.userId = "test-user-id";
@@ -15,14 +14,12 @@ jest.mock("../../middleware/authJwt", () => ({
   isModeratorOrAdmin: jest.fn((req, res, next) => next()),
 }));
 
-// Bypass sign-up middlewares to avoid duplicate/email checks blocking tests
 jest.mock("../../middleware/verifySignUp", () => ({
   validateEmail: (req, res, next) => next(),
   validatePassword: (req, res, next) => next(),
   checkDuplicateUsernameOrEmail: async (req, res, next) => next(),
 }));
 
-// Mock des modèles
 jest.mock("../../Models/UserModel");
 jest.mock("../../Models/Avis");
 jest.mock("../../Models/Outil");
@@ -32,12 +29,10 @@ describe("Routes Integration Tests", () => {
   let app;
 
   beforeAll(async () => {
-    // Créer une application Express de test
     app = express();
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
-    // Ajouter les routes
     app.use("/user", userRouter);
     app.use("/avis", avisRouter);
     app.use("/outils", outilsRouter);
@@ -199,7 +194,7 @@ describe("Routes Integration Tests", () => {
       it("should return 400 when notes are out of range", async () => {
         const avisData = {
           outilId: "1",
-          note: 25, // Invalid note
+          note: 25,
           difficulte: 10,
           performance: 18,
           flexibilite: 12,

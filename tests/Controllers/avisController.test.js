@@ -4,14 +4,11 @@ const outilModel = require("../../Models/Outil");
 const { calculerMoyennesOutil } = require("../../utils/statistiques");
 const {
   createTestAvisData,
-  createTestOutilData,
   mockRequest,
   mockResponse,
   expectErrorResponse,
-  expectSuccessResponse,
 } = require("../helpers/testUtils");
 
-// Mock des modèles et utilitaires
 jest.mock("../../Models/Avis");
 jest.mock("../../Models/Outil");
 jest.mock("../../utils/statistiques");

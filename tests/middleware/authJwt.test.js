@@ -2,7 +2,6 @@ const authJwt = require("../../middleware/authJwt");
 const jwt = require("jsonwebtoken");
 const User = require("../../Models/UserModel");
 
-// Mock des modules
 jest.mock("jsonwebtoken");
 jest.mock("../../Models/UserModel");
 
@@ -22,7 +21,6 @@ describe("AuthJWT Middleware", () => {
     };
     next = jest.fn();
 
-    // Reset des mocks
     jest.clearAllMocks();
   });
 
@@ -31,7 +29,6 @@ describe("AuthJWT Middleware", () => {
       const token = "valid-token";
       req.headers["authorization"] = `Bearer ${token}`;
 
-      // Mock JWT verify avec callback
       jwt.verify.mockImplementation((token, secret, callback) => {
         callback(null, { userId: "1" });
       });
@@ -59,7 +56,6 @@ describe("AuthJWT Middleware", () => {
       const token = "invalid-token";
       req.headers["authorization"] = `Bearer ${token}`;
 
-      // Mock JWT verify avec callback d'erreur
       jwt.verify.mockImplementation((token, secret, callback) => {
         callback(new Error("Invalid token"), null);
       });
@@ -78,7 +74,6 @@ describe("AuthJWT Middleware", () => {
       const token = "valid-token";
       req.headers["authorization"] = `Bearer ${token}`;
 
-      // Mock JWT verify avec callback d'erreur
       jwt.verify.mockImplementation((token, secret, callback) => {
         callback(new Error("JWT verification failed"), null);
       });

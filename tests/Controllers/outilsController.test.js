@@ -9,7 +9,6 @@ const {
   expectErrorResponse,
 } = require("../helpers/testUtils");
 
-// Mock des modèles
 jest.mock("../../Models/Outil");
 jest.mock("../../Models/Avis");
 jest.mock("../../Models/Categorie");
