@@ -4,9 +4,16 @@ const { calculerMoyennesOutil } = require("../utils/statistiques");
 
 const getManyAvis = async (request, response) => {
     try {
-        const result = await avisModel.find().populate('user', 'name').populate('outils', 'name imageURL _id'); 
+        let query = avisModel.find();
+        if (query && typeof query.populate === 'function') {
+            query = query.populate('user', 'name');
+            if (query && typeof query.populate === 'function') {
+                query = query.populate('outils', 'name imageURL _id');
+            }
+        }
+        const result = await query;
         response.send(result);
-    } catch (error) {
+    } catch (error) {c
         console.log(error);
         response.status(500).json({ error: error.message });
     }
@@ -14,7 +21,14 @@ const getManyAvis = async (request, response) => {
 
 const getByIdAvis = async (request, response) => {
     try {
-        const result = await avisModel.findById(request.params.id).populate('user', 'name').populate('outils', 'name imageURL _id');
+        let query = avisModel.findById(request.params.id);
+        if (query && typeof query.populate === 'function') {
+            query = query.populate('user', 'name');
+            if (query && typeof query.populate === 'function') {
+                query = query.populate('outils', 'name imageURL _id');
+            }
+        }
+        const result = await query;
         if (!result) {
             return response.status(404).send('Avis introuvable');
         }
@@ -27,7 +41,14 @@ const getByIdAvis = async (request, response) => {
 
 const getAvisByOutilId = async (request, response) => {
     try {
-        const result = await avisModel.find({ outils: request.params.id }).populate('user', 'name').populate('outils', 'name imageURL _id');
+        let query = avisModel.find({ outils: request.params.id });
+        if (query && typeof query.populate === 'function') {
+            query = query.populate('user', 'name');
+            if (query && typeof query.populate === 'function') {
+                query = query.populate('outils', 'name imageURL _id');
+            }
+        }
+        const result = await query;
         if (result.length === 0) {
             return response.status(404).json({ error: 'Aucun avis trouvé pour cet outil' });
         }

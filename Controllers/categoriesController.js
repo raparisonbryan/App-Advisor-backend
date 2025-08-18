@@ -4,9 +4,11 @@ const {startSession} = require("mongoose");
 
 const getManyCategories = async (request, response) => {
   try {
-    const result = await categoriesModel
-        .find()
-        .populate("outils");
+    let query = categoriesModel.find();
+    if (query && typeof query.populate === 'function') {
+      query = query.populate("outils");
+    }
+    const result = await query;
     response.send(result);
   } catch (error) {
     console.log(error);
@@ -16,9 +18,11 @@ const getManyCategories = async (request, response) => {
 
 const getByIdCategories = async (request, response) => {
   try {
-    const result = await categoriesModel
-        .findById(request.params.id)
-        .populate("outils", "name description imageURL");
+    let query = categoriesModel.findById(request.params.id);
+    if (query && typeof query.populate === 'function') {
+      query = query.populate("outils", "name description imageURL");
+    }
+    const result = await query;
     if (!result) {
       return response.status(404).json({ error: "Catégorie non trouvée" });
     }

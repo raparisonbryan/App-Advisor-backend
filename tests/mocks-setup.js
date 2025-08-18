@@ -1,4 +1,3 @@
-// Configuration des mocks globaux - chargé AVANT les tests
 jest.mock("jsonwebtoken", () => ({
   verify: jest.fn(),
   sign: jest.fn(),
@@ -10,15 +9,15 @@ jest.mock("bcrypt", () => ({
 }));
 
 jest.mock("cloudinary", () => ({
-  config: jest.fn(),
   v2: {
+    config: jest.fn(),
     uploader: {
       upload: jest.fn(),
+      destroy: jest.fn(),
     },
   },
 }));
 
-// Mock des modèles Mongoose
 jest.mock("../Models/UserModel", () => {
   const UserModel = jest.fn();
   UserModel.find = jest.fn().mockReturnThis();
@@ -33,7 +32,6 @@ jest.mock("../Models/UserModel", () => {
   UserModel.findByIdAndDelete = jest.fn();
   UserModel.updateMany = jest.fn();
   UserModel.deleteMany = jest.fn();
-  UserModel.mockImplementation = jest.fn();
   UserModel.sort = jest.fn().mockReturnThis();
   UserModel.limit = jest.fn().mockReturnThis();
   UserModel.skip = jest.fn().mockReturnThis();
@@ -55,7 +53,6 @@ jest.mock("../Models/Avis", () => {
   AvisModel.findByIdAndDelete = jest.fn();
   AvisModel.updateMany = jest.fn();
   AvisModel.deleteMany = jest.fn();
-  AvisModel.mockImplementation = jest.fn();
   AvisModel.sort = jest.fn().mockReturnThis();
   AvisModel.limit = jest.fn().mockReturnThis();
   AvisModel.skip = jest.fn().mockReturnThis();
@@ -77,7 +74,6 @@ jest.mock("../Models/Outil", () => {
   OutilModel.findByIdAndDelete = jest.fn();
   OutilModel.updateMany = jest.fn();
   OutilModel.deleteMany = jest.fn();
-  OutilModel.mockImplementation = jest.fn();
   OutilModel.sort = jest.fn().mockReturnThis();
   OutilModel.limit = jest.fn().mockReturnThis();
   OutilModel.skip = jest.fn().mockReturnThis();
@@ -99,7 +95,6 @@ jest.mock("../Models/Categorie", () => {
   CategorieModel.findByIdAndDelete = jest.fn();
   CategorieModel.updateMany = jest.fn();
   CategorieModel.deleteMany = jest.fn();
-  CategorieModel.mockImplementation = jest.fn();
   CategorieModel.sort = jest.fn().mockReturnThis();
   CategorieModel.limit = jest.fn().mockReturnThis();
   CategorieModel.skip = jest.fn().mockReturnThis();
@@ -107,7 +102,6 @@ jest.mock("../Models/Categorie", () => {
   return CategorieModel;
 });
 
-// Mock de la fonction calculerMoyennesOutil
 jest.mock("../utils/statistiques", () => ({
   calculerMoyennesOutil: jest.fn(),
 }));

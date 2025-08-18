@@ -1,37 +1,40 @@
+jest.unmock("../../utils/statistiques");
 const { calculerMoyennesOutil } = require("../../utils/statistiques");
+const AvisModel = require("../../Models/Avis");
+const OutilModel = require("../../Models/Outil");
+
+jest.mock("../../Models/Avis");
+jest.mock("../../Models/Outil");
 
 describe("Statistiques Utils", () => {
-  describe("calculerMoyennesOutil", () => {
-    it("should be a function", () => {
-      expect(typeof calculerMoyennesOutil).toBe("function");
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    it("should be async", () => {
-      // La fonction est async, donc elle retourne une Promise
-      expect(() => {
-        calculerMoyennesOutil("test-id");
-      }).not.toThrow();
-    });
+  it("should set zeros when no avis found", async () => {
+    AvisModel.find.mockResolvedValue([]);
+    OutilModel.findByIdAndUpdate.mockResolvedValue({});
 
-    it("should accept one parameter", () => {
-      // La fonction accepte un paramètre
-      expect(() => {
-        calculerMoyennesOutil("test-id");
-      }).not.toThrow();
-    });
+    await calculerMoyennesOutil("oid");
 
-    it("should handle basic functionality", async () => {
-      // Test simple pour vérifier que la fonction existe et peut être appelée
-      expect(() => {
-        // La fonction peut être appelée sans erreur de syntaxe
-        calculerMoyennesOutil("test-id");
-      }).not.toThrow();
-    });
+    expect(OutilModel.findByIdAndUpdate).toHaveBeenCalledWith("oid", expect.objectContaining({
+      moyenneNote: 0,
+      nombreAvis: 0,
+    }));
+  });
 
-    it("should have correct function signature", () => {
-      // Vérifier que la fonction a la bonne signature
-      expect(typeof calculerMoyennesOutil).toBe("function");
-      expect(calculerMoyennesOutil).toBeDefined();
-    });
+  it("should compute averages and update outil", async () => {
+    AvisModel.find.mockResolvedValue([
+      { note: 10, difficulte: 12, performance: 14, flexibilite: 16 },
+      { note: 20, difficulte: 8, performance: 6, flexibilite: 4 },
+    ]);
+    OutilModel.findByIdAndUpdate.mockResolvedValue({});
+
+    await calculerMoyennesOutil("oid");
+
+    expect(OutilModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      "oid",
+      expect.objectContaining({ moyenneNote: 15, nombreAvis: 2 })
+    );
   });
 });

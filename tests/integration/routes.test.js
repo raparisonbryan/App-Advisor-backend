@@ -1,6 +1,5 @@
 const request = require("supertest");
 const express = require("express");
-const mongoose = require("mongoose");
 const userRouter = require("../../Routers/userRouter");
 const avisRouter = require("../../Routers/avisRouter");
 const outilsRouter = require("../../Routers/outilsRouter");
@@ -14,6 +13,13 @@ jest.mock("../../middleware/authJwt", () => ({
   }),
   isAdmin: jest.fn((req, res, next) => next()),
   isModeratorOrAdmin: jest.fn((req, res, next) => next()),
+}));
+
+// Bypass sign-up middlewares to avoid duplicate/email checks blocking tests
+jest.mock("../../middleware/verifySignUp", () => ({
+  validateEmail: (req, res, next) => next(),
+  validatePassword: (req, res, next) => next(),
+  checkDuplicateUsernameOrEmail: async (req, res, next) => next(),
 }));
 
 // Mock des modèles

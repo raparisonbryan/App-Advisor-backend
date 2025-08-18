@@ -7,13 +7,13 @@ const {
   mockRequest,
   mockResponse,
   expectErrorResponse,
-  expectSuccessResponse,
 } = require("../helpers/testUtils");
 
 // Mock des modèles
 jest.mock("../../Models/Outil");
 jest.mock("../../Models/Avis");
 jest.mock("../../Models/Categorie");
+jest.mock("../../utils/cleanup", () => ({ cleanupOrphanedAvis: jest.fn() }));
 
 describe("OutilsController", () => {
   let req, res;
@@ -219,6 +219,153 @@ describe("OutilsController", () => {
       await outilsController.deleteByIdOutils(req, res);
 
       expectErrorResponse(res, 500, "Delete failed");
+    });
+  });
+});
+
+const { startSession } = require("mongoose");
+
+jest.mock("mongoose", () => ({ startSession: jest.fn() }));
+
+describe("OutilsController extended", () => {
+  let req, res;
+  beforeEach(() => {
+    req = mockRequest();
+    res = mockResponse();
+    jest.clearAllMocks();
+  });
+
+  describe("postManyOutils", () => {
+    it("should create multiple tools and update categories", async () => {
+      req.body = [
+        {name: "t1", categories: ["c1", "c2"]},
+        {name: "t2", categories: []},
+      ];
+
+      const saved1 = { _id: "o1" };
+      const saved2 = { _id: "o2" };
+      const saveMock1 = jest.fn().mockResolvedValue(saved1);
+      const saveMock2 = jest.fn().mockResolvedValue(saved2);
+      let call = 0;
+      outilModel.mockImplementation(() => ({ save: (++call === 1) ? saveMock1 : saveMock2 }));
+
+      categorieModel.updateMany.mockResolvedValue({ modifiedCount: 1 });
+
+      await outilsController.postManyOutils(req, res);
+
+      expect(categorieModel.updateMany).toHaveBeenCalledWith(
+        { _id: { $in: ["c1", "c2"] } },
+        { $push: { outils: "o1" } }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalled();
+      const sent = res.send.mock.calls[0][0];
+      expect(Array.isArray(sent)).toBe(true);
+      expect(sent).toHaveLength(2);
+    });
+
+    it("should create single tool when body is not array", async () => {
+      req.body = { name: "single", categories: ["c3"] };
+      const saved = { _id: "o3", name: "single" };
+      outilModel.mockImplementation(() => ({ save: jest.fn().mockResolvedValue(saved) }));
+
+      await outilsController.postManyOutils(req, res);
+
+      expect(categorieModel.updateMany).toHaveBeenCalledWith(
+        { _id: { $in: ["c3"] } },
+        { $push: { outils: "o3" } }
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(saved);
+    });
+  });
+
+  describe("updateOutilCategories", () => {
+    it("should update categories transactionally", async () => {
+      req.params = { id: "oid" };
+      req.body = { categories: ["nc1", "nc2"] };
+
+      // mock session
+      const session = {
+        startTransaction: jest.fn(),
+        abortTransaction: jest.fn(),
+        commitTransaction: jest.fn(),
+        endSession: jest.fn(),
+      };
+      startSession.mockResolvedValue(session);
+
+      const outil = { _id: "oid", categories: ["oc1"], save: jest.fn().mockResolvedValue(true) };
+      // findById().session(session)
+      const sessionFn = jest.fn().mockResolvedValue(outil);
+      outilModel.findById.mockReturnValue({ session: sessionFn });
+
+      categorieModel.updateMany.mockResolvedValue({});
+
+      await outilsController.updateOutilCategories(req, res);
+
+      expect(session.startTransaction).toHaveBeenCalled();
+      expect(categorieModel.updateMany).toHaveBeenCalledTimes(2);
+      expect(outil.save).toHaveBeenCalledWith({ session });
+      expect(session.commitTransaction).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+      expect(session.endSession).toHaveBeenCalled();
+    });
+  });
+
+  describe("syncAvisToOutils", () => {
+    it("should add avis ids to outils", async () => {
+      const avis = [ { _id: "a1", outils: "o1" }, { _id: "a2", outils: null } ];
+      avisModel.find.mockResolvedValue(avis);
+      outilModel.findByIdAndUpdate.mockResolvedValue({});
+
+      await outilsController.syncAvisToOutils(req, res);
+
+      expect(outilModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        "o1",
+        { $addToSet: { avis: "a1" } }
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ totalAvis: avis.length }));
+    });
+  });
+
+  describe("syncMoyennes", () => {
+    it("should compute averages and update outils", async () => {
+      outilModel.updateMany.mockResolvedValue({ modifiedCount: 3 });
+      const outils = [ { _id: "o1" }, { _id: "o2" } ];
+      outilModel.find.mockResolvedValue(outils);
+      avisModel.find
+        .mockResolvedValueOnce([ { note: 10, difficulte: 10, performance: 10, flexibilite: 10 } ])
+        .mockResolvedValueOnce([]);
+      outilModel.findByIdAndUpdate.mockResolvedValue({});
+
+      await outilsController.syncMoyennes(req, res);
+
+      expect(outilModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        "o1",
+        expect.objectContaining({ moyenneNote: 10, nombreAvis: 1 })
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ totalOutils: 2 }));
+    });
+  });
+
+  describe("cleanupData", () => {
+    it("should return deleted count from cleanup util", async () => {
+      jest.resetModules();
+      const mockCleanup = { cleanupOrphanedAvis: jest.fn().mockResolvedValue({ deletedCount: 5 }) };
+      jest.doMock("../../utils/cleanup", () => mockCleanup);
+      const ctrl = require("../../Controllers/outilsController");
+
+      await ctrl.cleanupData(req, res);
+
+      expect(mockCleanup.cleanupOrphanedAvis).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Nettoyage terminé avec succès",
+        avisOrphelinsSupprimes: 5,
+      });
     });
   });
 });
