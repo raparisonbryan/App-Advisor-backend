@@ -75,15 +75,23 @@ describe("UserController", () => {
     it("should handle database errors", async () => {
       req.params = { id: "1" };
       const error = new Error("Invalid ObjectId");
+
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
       userModel.findById.mockRejectedValue(error);
 
       await userController.getByIdUser(req, res);
 
-      expectErrorResponse(
-        res,
-        500,
-        "Une erreur est survenue lors de la récupération de l'utilisateur"
+      expect(consoleSpy).toHaveBeenCalledWith({
+        error: "Une erreur est survenue lors de la récupération de l'utilisateur"
+      });
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+          "Une erreur est survenue lors de la récupération de l'utilisateur"
       );
+
+      consoleSpy.mockRestore();
     });
   });
 
