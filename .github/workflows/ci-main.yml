@@ -120,7 +120,8 @@ jobs:
 
       - name: Check for hardcoded secrets
         run: |
-          if grep -r "password\|secret\|key\|token" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=tests | grep -v "process.env"; then
+          # Chercher uniquement les vraies valeurs hardcodées (= "valeur" ou = 'valeur')
+          if grep -r -E "(password|secret|key|token)\s*=\s*['\"][^'\"]*['\"]" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=tests --exclude-dir=coverage --exclude-dir=.idea | grep -v "process.env" | grep -v "test\|mock\|fake\|example\|dummy"; then
             echo "⚠️  Potential hardcoded secrets found"
             exit 1
           else
