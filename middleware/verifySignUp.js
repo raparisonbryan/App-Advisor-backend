@@ -10,7 +10,7 @@ const validatePassword = (req, res, next) => {
   }
 
   // Politique assouplie pour les tests/intégration: uniquement longueur minimale
-  if (typeof password !== 'string' || password.length < 8) {
+  if (typeof password !== "string" || password.length < 8) {
     return res.status(400).json({
       msg: "Le mot de passe doit contenir au moins 8 caractères",
     });
@@ -22,7 +22,7 @@ const validatePassword = (req, res, next) => {
 const checkDuplicateUsernameOrEmail = async (req, res, next) => {
   try {
     // Si le modèle mocké ne fournit pas findOne, ignorer le contrôle pour les tests/intégration
-    if (typeof userModel.findOne !== 'function') {
+    if (typeof userModel.findOne !== "function") {
       return next();
     }
 
@@ -37,8 +37,7 @@ const checkDuplicateUsernameOrEmail = async (req, res, next) => {
     }
 
     next();
-  } catch (err) {
-    // En cas d'erreur (ex: mock mal configuré), ne pas bloquer la route d'inscription
+  } catch (_err) {
     return next();
   }
 };

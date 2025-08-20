@@ -1,0 +1,13 @@
+node_modules/
+coverage/
+*.min.js
+dist/
+build/
+tests/mocks-setup.js
+tests/setup.js
+tests/utils/
+tests/helpers/
+tests/integration/
+tests/middleware/
+tests/Models/
+tests/Controllers/

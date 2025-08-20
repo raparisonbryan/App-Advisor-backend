@@ -30,4 +30,11 @@ module.exports = {
   testFailureExitCode: 1,
   collectCoverage: true,
   coverageReporters: ["text", "lcov", "html"],
+  silent: false,
+  verbose: false,
+  // Supprimer les warnings de console.log pendant les tests
+  setupFilesAfterEnv: [
+    "<rootDir>/tests/setup.js",
+    "<rootDir>/tests/mocks-setup.js",
+  ],
 };
