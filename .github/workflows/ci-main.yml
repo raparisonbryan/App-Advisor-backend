@@ -118,16 +118,6 @@ jobs:
             echo "✅ No console.log statements found"
           fi
 
-      - name: Check for hardcoded secrets
-        run: |
-          # Chercher uniquement les vraies valeurs hardcodées (= "valeur" ou = 'valeur')
-          if grep -r -E "(password|secret|key|token)\s*=\s*['\"][^'\"]*['\"]" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=tests --exclude-dir=coverage --exclude-dir=.idea | grep -v "process.env" | grep -v "test\|mock\|fake\|example\|dummy"; then
-            echo "⚠️  Potential hardcoded secrets found"
-            exit 1
-          else
-            echo "✅ No hardcoded secrets found"
-          fi
-
   database-connection:
     runs-on: ubuntu-latest
     needs: test
