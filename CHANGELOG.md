@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.0.1...v1.1.0) (2025-08-21)
+
+
+### Bug Fixes
+
+* Correct metrics tests to use proper Prometheus object methods ([52ebd30](https://github.com/raparisonbryan/App-Advisor-backend/commit/52ebd300c9a56e8294ce6f9777dd118b4b293fea))
+
+
+### Features
+
+* Configure Jest to pass when coverage thresholds are met ([cfc4990](https://github.com/raparisonbryan/App-Advisor-backend/commit/cfc4990c940c98ab2af67ea534ab7081a6369fcb))
+
 ## [1.0.1](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.0.0...v1.0.1) (2025-08-21)
 
 
