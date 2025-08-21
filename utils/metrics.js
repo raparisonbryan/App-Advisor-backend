@@ -3,7 +3,6 @@ const promClient = require("prom-client");
 const register = new promClient.Registry();
 
 promClient.collectDefaultMetrics({ register });
-
 const httpRequestDurationMicroseconds = new promClient.Histogram({
   name: "http_request_duration_seconds",
   help: "Duration of HTTP requests in seconds",
@@ -67,7 +66,6 @@ const measureDatabaseOperation = async (operation, collection, fn) => {
     const duration = (Date.now() - start) / 1000;
 
     databaseQueryDuration.labels(operation, collection).observe(duration);
-
     databaseOperationsTotal.labels(operation, collection, "success").inc();
 
     return result;
@@ -75,7 +73,6 @@ const measureDatabaseOperation = async (operation, collection, fn) => {
     const duration = (Date.now() - start) / 1000;
 
     databaseQueryDuration.labels(operation, collection).observe(duration);
-
     databaseOperationsTotal.labels(operation, collection, "error").inc();
 
     throw error;
