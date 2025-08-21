@@ -185,8 +185,24 @@ const putAvisById = async (request, response) => {
 
 const deleteManyAvis = async (request, response) => {
   try {
-    const input = request.body;
-    const result = await avisModel.deleteMany(input);
+    const { ids } = request.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return response.status(400).json({
+        error: "Le champ 'ids' doit être un tableau non vide d'identifiants",
+      });
+    }
+
+    const mongoose = require("mongoose");
+    const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+    if (validIds.length !== ids.length) {
+      return response.status(400).json({
+        error: "Certains identifiants ne sont pas valides",
+      });
+    }
+
+    const result = await avisModel.deleteMany({ _id: { $in: validIds } });
     response.send(result);
   } catch (error) {
     logger.error("Error in function", {

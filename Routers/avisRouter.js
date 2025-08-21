@@ -1,7 +1,10 @@
-const express = require("express") ; 
-const router = express.Router() ; 
+const express = require("express");
+const router = express.Router();
 const avis = require("../Controllers/avisController");
 const verifyToken = require("../middleware/authJwt");
+const { generalLimiter } = require("../middleware/rateLimiter");
+
+router.use(generalLimiter);
 
 /**
  * @swagger
@@ -13,7 +16,7 @@ const verifyToken = require("../middleware/authJwt");
  *       200:
  *         description: Retourne la liste des avis
  */
-router.get("/" , avis.getManyAvis); 
+router.get("/", avis.getManyAvis);
 
 /**
  * @swagger
@@ -32,7 +35,7 @@ router.get("/" , avis.getManyAvis);
  *       200:
  *         description: Retourne un avis
  */
-router.get("/:id" , avis.getByIdAvis);
+router.get("/:id", avis.getByIdAvis);
 
 /**
  * @swagger
@@ -51,7 +54,7 @@ router.get("/:id" , avis.getByIdAvis);
  *       200:
  *         description: Retourne les avis d'un outil
  */
-router.get("/outil/:id" , avis.getAvisByOutilId);
+router.get("/outil/:id", avis.getAvisByOutilId);
 
 /**
  * @swagger
@@ -82,7 +85,7 @@ router.get("/outil/:id" , avis.getAvisByOutilId);
  *       200:
  *         description: Retourne un message de confirmation
  */
-router.post("/" ,  verifyToken.verifyToken , avis.postAvis); 
+router.post("/", verifyToken.verifyToken, avis.postAvis);
 
 /**
  * @swagger
@@ -118,7 +121,7 @@ router.post("/" ,  verifyToken.verifyToken , avis.postAvis);
  *       200:
  *         description: Retourne l'avis modifié
  */
-router.put("/:id" , avis.putAvisById); 
+router.put("/:id", avis.putAvisById);
 
 /**
  * @swagger
@@ -130,7 +133,7 @@ router.put("/:id" , avis.putAvisById);
  *       200:
  *         description: Retourne un message de confirmation de suppression
  */
-router.delete("/" , avis.deleteManyAvis); 
+router.delete("/", avis.deleteManyAvis);
 
 /**
  * @swagger
@@ -149,6 +152,6 @@ router.delete("/" , avis.deleteManyAvis);
  *       200:
  *         description: Retourne un message de confirmation de suppression
  */
-router.delete("/:id" , avis.deleteByIdAvis);
+router.delete("/:id", avis.deleteByIdAvis);
 
-module.exports = router ; 
+module.exports = router;

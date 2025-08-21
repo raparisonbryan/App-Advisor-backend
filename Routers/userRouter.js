@@ -4,6 +4,9 @@ const user = require("../Controllers/userController");
 const verifySignUp = require("../middleware/verifySignUp");
 const passwordReset = require("../middleware/passwordReset");
 const authJwt = require("../middleware/authJwt");
+const { generalLimiter, authLimiter } = require("../middleware/rateLimiter");
+
+router.use(generalLimiter);
 
 /**
  * @swagger
@@ -42,6 +45,7 @@ router.get("/me", authJwt.verifyToken, user.getCurrentUser);
  */
 router.post(
   "/signup",
+  authLimiter,
   verifySignUp.validateEmail,
   verifySignUp.validatePassword,
   verifySignUp.checkDuplicateUsernameOrEmail,
@@ -69,7 +73,7 @@ router.post(
  *       200:
  *         description: L'utilisateur est connecté
  */
-router.post("/signin", user.signin);
+router.post("/signin", authLimiter, user.signin);
 
 /**
  * @swagger
