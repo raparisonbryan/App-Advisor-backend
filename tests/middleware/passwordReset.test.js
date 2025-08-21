@@ -36,8 +36,6 @@ describe("middleware/passwordReset", () => {
     });
 
     it("should send email and return 200", async () => {
-      process.env.CLIENT_URL = "https://client";
-      process.env.EMAIL_USER = "sender@test";
       req.body = { email: "user@example.com" };
       const user = { save: jest.fn().mockResolvedValue(true) };
       UserModel.findOne.mockResolvedValue(user);
@@ -81,7 +79,10 @@ describe("middleware/passwordReset", () => {
     it("should hash and save new password", async () => {
       req.params = { token: "ok" };
       req.body = { password: "newpass123" };
-      const user = { password: "hashed", save: jest.fn().mockResolvedValue(true) };
+      const user = {
+        password: "hashed",
+        save: jest.fn().mockResolvedValue(true),
+      };
       UserModel.findOne.mockResolvedValue(user);
       bcrypt.compare = jest.fn().mockResolvedValue(false);
       bcrypt.hash = jest.fn().mockResolvedValue("hashedNew");

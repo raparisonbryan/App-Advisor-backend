@@ -14,4 +14,4 @@ logs/
 *.log
 
 # Test environment
-env.test
+.env.test

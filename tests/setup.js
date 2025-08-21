@@ -27,5 +27,6 @@ afterAll(async () => {
   await mongod.stop();
 });
 
-process.env.JWT_SECRET = "test-jwt-secret-for-testing-only-not-production";
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "..", ".env.test") });
 process.env.NODE_ENV = "test";
