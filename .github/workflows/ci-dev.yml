@@ -116,10 +116,12 @@ jobs:
 
       - name: Check for console.log statements
         run: |
-          if grep -r "console.log" . --exclude-dir=node_modules --exclude-dir=.git; then
-            echo "⚠️  console.log statements found in code"
+          # Exclure les fichiers de configuration et documentation
+          if find . -name "*.js" -not -path "./node_modules/*" -not -path "./.git/*" -not -path "./coverage/*" -not -name "*.config.js" -not -name "*.cjs" -exec grep -l "console.log" {} \; | grep -v "jest.config.js" | grep -v "swagger.js"; then
+            echo "⚠️  console.log statements found in source code"
+            exit 1
           else
-            echo "✅ No console.log statements found"
+            echo "✅ No console.log statements found in source code"
           fi
 
   database-connection:
