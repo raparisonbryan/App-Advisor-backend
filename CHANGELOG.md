@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.0.0...v1.0.1) (2025-08-21)
+
+
+### Bug Fixes
+
+* semantic release for github bug ([946f284](https://github.com/raparisonbryan/App-Advisor-backend/commit/946f284bbb58745d5e89361304490a4f5f00126b))
+
 # 1.0.0 (2025-08-21)
 
 
