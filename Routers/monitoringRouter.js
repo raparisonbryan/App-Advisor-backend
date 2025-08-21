@@ -6,9 +6,30 @@ const { logger } = require("../utils/logger");
 
 router.get("/metrics", async (req, res) => {
   try {
+    const authToken = process.env.METRICS_AUTH_TOKEN;
+
+    if (authToken) {
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+          error: "Unauthorized - Bearer token required",
+        });
+      }
+
+      const token = authHeader.split(" ")[1];
+      if (token !== authToken) {
+        return res.status(401).json({
+          error: "Unauthorized - Invalid token",
+        });
+      }
+    }
+
     const metrics = await getMetrics();
     res.set("Content-Type", "text/plain");
     res.send(metrics);
+
+    logger.info("Metrics endpoint accessed successfully");
   } catch (error) {
     logger.error("Error getting metrics", { error: error.message });
     res.status(500).json({ error: "Failed to get metrics" });
