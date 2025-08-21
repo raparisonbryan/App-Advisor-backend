@@ -27,5 +27,5 @@ afterAll(async () => {
   await mongod.stop();
 });
 
-process.env.JWT_SECRET = "test-secret-key";
+process.env.JWT_SECRET = "test-jwt-secret-for-testing-only-not-production";
 process.env.NODE_ENV = "test";

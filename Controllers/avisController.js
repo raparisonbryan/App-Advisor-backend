@@ -175,7 +175,10 @@ const putAvisById = async (request, response) => {
 
     response.send(result);
   } catch (error) {
-    logger.error("Error in function", { error: error.message, stack: error.stack });
+    logger.error("Error in function", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
@@ -186,7 +189,10 @@ const deleteManyAvis = async (request, response) => {
     const result = await avisModel.deleteMany(input);
     response.send(result);
   } catch (error) {
-    logger.error("Error in function", { error: error.message, stack: error.stack });
+    logger.error("Error in function", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
@@ -215,7 +221,10 @@ const deleteByIdAvis = async (request, response) => {
 
     response.send(result);
   } catch (error) {
-    logger.error("Error in function", { error: error.message, stack: error.stack });
+    logger.error("Error in function", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
