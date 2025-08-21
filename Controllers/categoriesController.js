@@ -1,4 +1,5 @@
 const categoriesModel = require("../Models/Categorie");
+const { logger } = require("../utils/logger");
 const outilsModel = require("../Models/Outil");
 const {startSession} = require("mongoose");
 
@@ -11,7 +12,7 @@ const getManyCategories = async (request, response) => {
     const result = await query;
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };
@@ -28,7 +29,7 @@ const getByIdCategories = async (request, response) => {
     }
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };
@@ -40,7 +41,7 @@ const postCategories = async (request, response) => {
     const savedCategory = await category.save();
     response.status(201).send(savedCategory);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };
@@ -56,7 +57,7 @@ const updateCategoriesById = async (request, response) => {
     }
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };
@@ -118,7 +119,7 @@ const deleteByIdCategories = async (request, response) => {
     }
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };

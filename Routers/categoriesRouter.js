@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const categories = require("../Controllers/categoriesController");
 const authJwt = require("../middleware/authJwt");
+const { generalLimiter } = require("../middleware/rateLimiter");
+
+router.use(generalLimiter);
 
 /**
  * @swagger
@@ -60,10 +63,11 @@ router.get("/:id", categories.getByIdCategories);
  *       201:
  *         description: La catégorie a été créée
  */
-router.post("/",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    categories.postCategories
+router.post(
+  "/",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  categories.postCategories
 );
 
 /**
@@ -99,10 +103,11 @@ router.post("/",
  *       200:
  *         description: La catégorie a été mise à jour
  */
-router.put("/:id",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    categories.updateCategoriesById
+router.put(
+  "/:id",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  categories.updateCategoriesById
 );
 
 /**
@@ -134,10 +139,11 @@ router.put("/:id",
  *       200:
  *         description: Les outils associés à la catégorie ont été mis à jour
  */
-router.put("/:id/outils",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    categories.updateCategorieOutils
+router.put(
+  "/:id/outils",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  categories.updateCategorieOutils
 );
 
 /**
@@ -157,10 +163,11 @@ router.put("/:id/outils",
  *       200:
  *         description: La catégorie a été supprimée
  */
-router.delete("/:id",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    categories.deleteByIdCategories
+router.delete(
+  "/:id",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  categories.deleteByIdCategories
 );
 
 module.exports = router;

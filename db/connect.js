@@ -3,6 +3,7 @@ const userName = encodeURIComponent(process.env.JWT_USER);
 const password = encodeURIComponent(process.env.JWT_PWD);
 
 const mongoose = require("mongoose");
+const { logger } = require("../utils/logger");
 
 const connectDatabase = () => {
   mongoose
@@ -10,12 +11,12 @@ const connectDatabase = () => {
       `mongodb+srv://${userName}:${password}@appadvisor.uohjdvt.mongodb.net/appadvisor?retryWrites=true&w=majority&appName=Appadvisor`
     )
     .then((con) => {
-      console.log(
+      logger.info(
         `MongoDB Database Connected with Host: ${con.connection.host}`
       );
     })
     .catch((err) => {
-      console.log("Connection Error => ", err.message);
+      logger.info("Connection Error => ", err.message);
       process.exit(1);
     });
 };

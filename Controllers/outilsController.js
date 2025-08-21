@@ -1,4 +1,5 @@
 const outilsModel = require("../Models/Outil");
+const { logger } = require("../utils/logger");
 const avisModel = require("../Models/Avis");
 const Categorie = require("../Models/Categorie");
 const {startSession} = require("mongoose");
@@ -33,7 +34,7 @@ const getByIdOutils = async (request, response) => {
     const result = await query;
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };
@@ -57,8 +58,8 @@ const postOutils = async (req, res) => {
   try {
     const input = req.body;
 
-    console.log("INPUT:", input);
-    console.log("FILE:", req.file);
+    logger.info("Input data", { input });
+    logger.info("File upload", { file: req.file });
 
     if (req.file) {
       input.imageURL = req.file.path;

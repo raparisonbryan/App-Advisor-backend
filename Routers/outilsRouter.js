@@ -3,6 +3,9 @@ const router = express.Router();
 const outils = require("../Controllers/outilsController");
 const upload = require("../middleware/upload");
 const authJwt = require("../middleware/authJwt");
+const { generalLimiter } = require("../middleware/rateLimiter");
+
+router.use(generalLimiter);
 
 /**
  * @swagger
@@ -14,7 +17,7 @@ const authJwt = require("../middleware/authJwt");
  *       200:
  *         description: Une liste de tous les outils
  */
-router.get("/" , outils.getManyOutils);
+router.get("/", outils.getManyOutils);
 
 /**
  * @swagger
@@ -33,7 +36,7 @@ router.get("/" , outils.getManyOutils);
  *       200:
  *         description: Un outil spécifique
  */
-router.get("/:id" , outils.getByIdOutils);
+router.get("/:id", outils.getByIdOutils);
 
 /**
  * @swagger
@@ -52,7 +55,7 @@ router.get("/:id" , outils.getByIdOutils);
  *      200:
  *        description: Une liste de toutes les catégories de l'outil
  */
-router.get("/:id/categories" , outils.getOutilCategories);
+router.get("/:id/categories", outils.getOutilCategories);
 
 /**
  * @swagger
@@ -81,11 +84,12 @@ router.get("/:id/categories" , outils.getOutilCategories);
  *       200:
  *         description: L'outil a été créé
  */
-router.post("/",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    upload.single("image"),
-    outils.postOutils
+router.post(
+  "/",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  upload.single("image"),
+  outils.postOutils
 );
 
 /**
@@ -119,10 +123,11 @@ router.post("/",
  *       200:
  *         description: Les outils ont été créés
  */
-router.post("/many",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    outils.postManyOutils
+router.post(
+  "/many",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  outils.postManyOutils
 );
 
 /**
@@ -142,10 +147,11 @@ router.post("/many",
  *       200:
  *         description: Les avis ont été synchronisés avec succès
  */
-router.post("/sync-avis",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    outils.syncAvisToOutils
+router.post(
+  "/sync-avis",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  outils.syncAvisToOutils
 );
 
 /**
@@ -165,10 +171,11 @@ router.post("/sync-avis",
  *       200:
  *         description: Migration des moyennes terminée avec succès
  */
-router.post("/sync-moyennes",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    outils.syncMoyennes
+router.post(
+  "/sync-moyennes",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  outils.syncMoyennes
 );
 
 /**
@@ -188,10 +195,11 @@ router.post("/sync-moyennes",
  *       200:
  *         description: Nettoyage terminé avec succès
  */
-router.post("/cleanup",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    outils.cleanupData
+router.post(
+  "/cleanup",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  outils.cleanupData
 );
 
 /**
@@ -228,11 +236,12 @@ router.post("/cleanup",
  *       200:
  *         description: L'outil a été mis à jour
  */
-router.put("/:id",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    upload.single("image"),
-    outils.updateOutilsById
+router.put(
+  "/:id",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  upload.single("image"),
+  outils.updateOutilsById
 );
 
 /**
@@ -264,10 +273,11 @@ router.put("/:id",
  *      200:
  *        description: Les catégories associées à l'outil ont été mises à jour
  */
-router.put("/:id/categories",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    outils.updateOutilCategories
+router.put(
+  "/:id/categories",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  outils.updateOutilCategories
 );
 
 /**
@@ -287,10 +297,11 @@ router.put("/:id/categories",
  *       200:
  *         description: L'outil a été supprimé
  */
-router.delete("/:id",
-    authJwt.verifyToken,
-    authJwt.isAdmin,
-    outils.deleteByIdOutils
+router.delete(
+  "/:id",
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  outils.deleteByIdOutils
 );
 
-module.exports = router ;
+module.exports = router;

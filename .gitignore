@@ -12,3 +12,6 @@ CHANGELOG.md
 # Logs
 logs/
 *.log
+
+# Test environment
+.env.test

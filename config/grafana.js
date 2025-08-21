@@ -10,8 +10,8 @@ module.exports = {
     lokiUrl: process.env.GRAFANA_LOKI_URL,
   },
   metrics: {
-    enabled: process.env.METRICS_ENABLED === "true" || true,
-    port: process.env.METRICS_PORT || 9090,
+    enabled: process.env.METRICS_ENABLED !== "false",
+    port: parseInt(process.env.METRICS_PORT) || 9090,
     path: process.env.METRICS_PATH || "/metrics",
   },
   logging: {
