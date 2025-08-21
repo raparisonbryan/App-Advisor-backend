@@ -21,8 +21,10 @@ const getByIdUser = async (request, response) => {
       return response.status(404).send("Utilisateur introuvable");
     }
     response.send(result);
-  } catch (error) {
-    console.error(error);
+  } catch (_error) {
+    console.error({
+      error: "Une erreur est survenue lors de la récupération de l'utilisateur",
+    });
     response
       .status(500)
       .send("Une erreur est survenue lors de la récupération de l'utilisateur");

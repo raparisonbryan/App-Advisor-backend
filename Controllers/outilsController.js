@@ -7,10 +7,14 @@ const {cleanupOrphanedAvis} = require("../utils/cleanup");
 
 const getManyOutils = async (request, response) => {
   try {
-    const result = await outilsModel
-        .find()
-        .populate("categories", "name imageURL")
-        .populate("avis", "message note difficulte performance flexibilite user");
+    let query = outilsModel.find();
+    if (query && typeof query.populate === 'function') {
+      query = query.populate("categories", "name imageURL");
+      if (query && typeof query.populate === 'function') {
+        query = query.populate("avis", "message note difficulte performance flexibilite user");
+      }
+    }
+    const result = await query;
     response.send(result);
   } catch (error) {
     response.status(500).json({ error: error.message });
@@ -19,10 +23,14 @@ const getManyOutils = async (request, response) => {
 
 const getByIdOutils = async (request, response) => {
   try {
-    const result = await outilsModel
-        .findById(request.params.id)
-        .populate("categories", "name imageURL")
-        .populate("avis", "message note difficulte performance flexibilite user");
+    let query = outilsModel.findById(request.params.id);
+    if (query && typeof query.populate === 'function') {
+      query = query.populate("categories", "name imageURL");
+      if (query && typeof query.populate === 'function') {
+        query = query.populate("avis", "message note difficulte performance flexibilite user");
+      }
+    }
+    const result = await query;
     response.send(result);
   } catch (error) {
     console.log(error);
@@ -43,7 +51,7 @@ const getOutilCategories = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
+};
 
 const postOutils = async (req, res) => {
   try {

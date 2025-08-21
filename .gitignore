@@ -1,3 +1,14 @@
 node_modules
 .env
 .idea
+coverage/
+*.lcov
+.output.txtcoverage/
+
+# Semantic Release
+.releaserc.json
+CHANGELOG.md
+
+# Logs
+logs/
+*.log

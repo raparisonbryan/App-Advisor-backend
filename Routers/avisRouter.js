@@ -1,6 +1,6 @@
 const express = require("express") ; 
 const router = express.Router() ; 
-const avis = require("../Controllers/avisController")
+const avis = require("../Controllers/avisController");
 const verifyToken = require("../middleware/authJwt");
 
 /**

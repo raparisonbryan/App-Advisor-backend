@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const avisSchema = new mongoose.Schema({
     message: { type: String, required: [true, "message est requis"] },
