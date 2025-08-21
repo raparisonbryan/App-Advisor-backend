@@ -17,7 +17,6 @@ const swaggerUI = require("swagger-ui-express");
 const { metricsMiddleware } = require("./utils/metrics");
 const { logger, httpLoggingMiddleware } = require("./utils/logger");
 
-// Créer le dossier logs pour Grafana
 const logsDir = path.join(__dirname, "logs");
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
@@ -60,7 +59,6 @@ app.use("/monitoring", monitoringRouter);
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
 app.listen(port, () => {
-  logger.info(`Server is running on http://localhost:${port}`);
   logger.info(`Server is running on http://localhost:${port}`);
 });
 
