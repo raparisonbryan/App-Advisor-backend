@@ -15,3 +15,8 @@ logs/
 
 # Test environment
 .env.test
+
+# Prometheus
+prometheus_data/
+*.log
+data/
