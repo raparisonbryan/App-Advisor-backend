@@ -4,6 +4,11 @@ node_modules
 coverage/
 *.lcov
 .output.txtcoverage/
+
 # Semantic Release
 .releaserc.json
 CHANGELOG.md
+
+# Logs
+logs/
+*.log
