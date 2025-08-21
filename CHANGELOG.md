@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.2.0...v1.2.1) (2025-08-21)
+
+
+### Bug Fixes
+
+* metrics ([7f9d8fb](https://github.com/raparisonbryan/App-Advisor-backend/commit/7f9d8fb8211fb8b8f106636e90ca2cf16415d9ca))
+
 # [1.2.0](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.1.1...v1.2.0) (2025-08-21)
 
 
