@@ -1,6 +1,7 @@
 const avisModel = require("../Models/Avis");
 const outilModel = require("../Models/Outil");
 const { calculerMoyennesOutil } = require("../utils/statistiques");
+const { logger } = require("../utils/logger");
 
 const getManyAvis = async (request, response) => {
   try {
@@ -14,7 +15,10 @@ const getManyAvis = async (request, response) => {
     const result = await query;
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in getManyAvis", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
@@ -34,7 +38,10 @@ const getByIdAvis = async (request, response) => {
     }
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in getByIdAvis", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
@@ -56,7 +63,10 @@ const getAvisByOutilId = async (request, response) => {
     }
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in getAvisByOutilId", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
@@ -165,7 +175,7 @@ const putAvisById = async (request, response) => {
 
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };
@@ -176,7 +186,7 @@ const deleteManyAvis = async (request, response) => {
     const result = await avisModel.deleteMany(input);
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };
@@ -205,7 +215,7 @@ const deleteByIdAvis = async (request, response) => {
 
     response.send(result);
   } catch (error) {
-    console.log(error);
+    logger.error("Error in function", { error: error.message, stack: error.stack });
     response.status(500).json({ error: error.message });
   }
 };
