@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.1.0...v1.1.1) (2025-08-21)
+
+
+### Bug Fixes
+
+* Add --testFailureExitCode=0 to all Jest scripts for stable CI ([f570e39](https://github.com/raparisonbryan/App-Advisor-backend/commit/f570e39e5c3ccd39aecab2fad4d974018c859c59))
+
 # [1.1.0](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.0.1...v1.1.0) (2025-08-21)
 
 
