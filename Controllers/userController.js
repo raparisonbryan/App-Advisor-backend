@@ -100,19 +100,29 @@ const signup = async (request, response) => {
 };
 
 const signin = async (request, response) => {
-  const input = request.body;
-  const userExist = await userModel.findOne({ email: input.email });
+  const { email, password } = request.body;
+
+  if (!email || !password) {
+    return response.status(400).json({ msg: "Email et mot de passe requis" });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return response.status(400).json({ msg: "Format d'email invalide" });
+  }
+
+  const userExist = await userModel.findOne({ email: email });
   if (!userExist) {
     return response.status(404).json({ msg: "Utilisateur introuvable" });
   }
-  const validPass = await bcrypt.compare(input.password, userExist.password);
+  const validPass = await bcrypt.compare(password, userExist.password);
   if (!validPass) {
     return response.status(400).json({ msg: "Mot de passe incorrect" });
   }
   const token = jwt.sign({ userId: userExist._id }, secret, {
     expiresIn: "24h",
   });
-  // Générer et stocker le refresh token
+
   const refreshToken = generateRefreshToken();
   userExist.refreshToken = refreshToken;
   await userExist.save();
@@ -143,7 +153,6 @@ const generateRefreshToken = () => {
   return crypto.randomBytes(64).toString("hex");
 };
 
-// Nouvelle route pour refresh token
 const refreshToken = async (request, response) => {
   try {
     const refreshToken =
@@ -155,7 +164,7 @@ const refreshToken = async (request, response) => {
     if (!user) {
       return response.status(403).json({ msg: "Refresh token invalide" });
     }
-    // Générer un nouveau JWT d'accès et un nouveau refresh token
+
     const newToken = jwt.sign({ userId: user._id }, secret, {
       expiresIn: "24h",
     });
@@ -183,11 +192,9 @@ const refreshToken = async (request, response) => {
 
 const logout = async (request, response) => {
   try {
-    // Récupérer le refreshToken depuis le cookie
     const refreshToken =
       request.cookies.refreshToken || request.body.refreshToken;
     if (!refreshToken) {
-      // On efface quand même les cookies côté client
       response.clearCookie("token");
       response.clearCookie("refreshToken", { path: "/user/refresh-token" });
       return response.status(200).json({ msg: "Déconnecté." });

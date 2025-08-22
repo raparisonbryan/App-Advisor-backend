@@ -57,9 +57,17 @@ const postCategories = async (request, response) => {
 
 const updateCategoriesById = async (request, response) => {
   try {
-    const input = request.body;
+    const allowedFields = ["name", "description", "imageURL", "outils"];
+    const sanitizedInput = {};
+
+    for (const field of allowedFields) {
+      if (request.body[field] !== undefined) {
+        sanitizedInput[field] = request.body[field];
+      }
+    }
+
     const result = await categoriesModel
-      .findByIdAndUpdate(request.params.id, input, { new: true })
+      .findByIdAndUpdate(request.params.id, sanitizedInput, { new: true })
       .populate("outils", "name description imageURL");
     if (!result) {
       return response.status(404).json({ error: "Catégorie non trouvée" });

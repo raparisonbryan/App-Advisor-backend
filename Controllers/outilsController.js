@@ -197,7 +197,6 @@ const updateOutilsById = async (request, response) => {
       });
     }
 
-    // Valider et filtrer les données d'entrée pour éviter l'injection
     const allowedFields = [
       "name",
       "description",
@@ -208,7 +207,6 @@ const updateOutilsById = async (request, response) => {
     ];
     const sanitizedInput = {};
 
-    // Ne permettre que les champs autorisés
     for (const field of allowedFields) {
       if (request.body[field] !== undefined) {
         sanitizedInput[field] = request.body[field];
@@ -269,7 +267,10 @@ const updateOutilCategories = async (req, res) => {
       });
     }
 
-    const newCategoryIds = req.body.categories;
+    // Valider que categories est un tableau d'ObjectIds valides
+    const newCategoryIds = Array.isArray(req.body.categories)
+      ? req.body.categories.filter((id) => /^[0-9a-fA-F]{24}$/.test(id))
+      : [];
 
     const session = await startSession();
     session.startTransaction();
