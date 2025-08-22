@@ -1,3 +1,23 @@
+# [2.0.0](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.2.1...v2.0.0) (2025-08-22)
+
+
+### Bug Fixes
+
+* **ci:** resolve Jest hanging issues and improve test configuration ([1047510](https://github.com/raparisonbryan/App-Advisor-backend/commit/10475109b6142d3d5b56b063578a2f7c4626e557))
+* **security:** resolve additional CodeQL security vulnerabilities ([d0bc262](https://github.com/raparisonbryan/App-Advisor-backend/commit/d0bc262a2c9c9bddf3e00433ace85410e084f882))
+* **security:** resolve all CodeQL security vulnerabilities ([105d37b](https://github.com/raparisonbryan/App-Advisor-backend/commit/105d37bee2e6278da1ccb1c5d787e828f7b9861b))
+* **security:** resolve ESLint errors and security vulnerabilities ([b46715d](https://github.com/raparisonbryan/App-Advisor-backend/commit/b46715de9395950a44202f761fa23f3202a6ab47))
+
+
+### Features
+
+* add search functionality and comprehensive ObjectId validation ([6b7e613](https://github.com/raparisonbryan/App-Advisor-backend/commit/6b7e61320f91730ed74eb39500dd3388b17c4d6f))
+
+
+### BREAKING CHANGES
+
+* API now returns 400 for invalid ObjectId formats instead of 500
+
 ## [1.2.1](https://github.com/raparisonbryan/App-Advisor-backend/compare/v1.2.0...v1.2.1) (2025-08-21)
 
 
