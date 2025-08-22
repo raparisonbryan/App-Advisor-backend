@@ -106,12 +106,17 @@ const signin = async (request, response) => {
     return response.status(400).json({ msg: "Email et mot de passe requis" });
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  if (
+    !email.includes("@") ||
+    !email.includes(".") ||
+    email.length < 5 ||
+    email.length > 254
+  ) {
     return response.status(400).json({ msg: "Format d'email invalide" });
   }
 
-  const userExist = await userModel.findOne({ email: email });
+  const sanitizedEmail = email.trim().toLowerCase();
+  const userExist = await userModel.findOne({ email: sanitizedEmail });
   if (!userExist) {
     return response.status(404).json({ msg: "Utilisateur introuvable" });
   }
@@ -135,7 +140,7 @@ const signin = async (request, response) => {
     httpOnly: true,
     sameSite: "strict",
     path: "/user/refresh-token",
-    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
   return response.status(200).json({
     user: {

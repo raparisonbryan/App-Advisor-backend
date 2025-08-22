@@ -231,6 +231,10 @@ const updateOutilsById = async (request, response) => {
       .populate("categories", "name imageURL");
 
     if (sanitizedInput.categories) {
+      const validatedCategories = Array.isArray(sanitizedInput.categories)
+        ? sanitizedInput.categories.filter((id) => /^[0-9a-fA-F]{24}$/.test(id))
+        : [];
+
       if (oldOutil.categories && oldOutil.categories.length > 0) {
         await Categorie.updateMany(
           { _id: { $in: oldOutil.categories } },
@@ -238,9 +242,9 @@ const updateOutilsById = async (request, response) => {
         );
       }
 
-      if (sanitizedInput.categories.length > 0) {
+      if (validatedCategories.length > 0) {
         await Categorie.updateMany(
-          { _id: { $in: sanitizedInput.categories } },
+          { _id: { $in: validatedCategories } },
           { $addToSet: { outils: id } }
         );
       }

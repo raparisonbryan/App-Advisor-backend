@@ -84,7 +84,9 @@ const updateCategoriesById = async (request, response) => {
 
 const updateCategorieOutils = async (req, res) => {
   const categorieId = req.params.id;
-  const newOutilsIds = req.body.outils;
+  const newOutilsIds = Array.isArray(req.body.outils)
+    ? req.body.outils.filter((id) => /^[0-9a-fA-F]{24}$/.test(id))
+    : [];
 
   const session = await startSession();
   session.startTransaction();
