@@ -21,6 +21,27 @@ router.get("/", outils.getManyOutils);
 
 /**
  * @swagger
+ * /outils/search:
+ *   get:
+ *     summary: Recherche des outils par nom ou description
+ *     tags: [Outils]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Terme de recherche
+ *     responses:
+ *       200:
+ *         description: Liste des outils correspondant à la recherche
+ *       400:
+ *         description: Paramètre de recherche manquant
+ */
+router.get("/search", outils.searchOutils);
+
+/**
+ * @swagger
  * /outils/{id}:
  *   get:
  *     summary: Obtient un outil par son ID

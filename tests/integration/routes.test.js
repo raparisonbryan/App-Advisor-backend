@@ -5,13 +5,27 @@ const avisRouter = require("../../Routers/avisRouter");
 const outilsRouter = require("../../Routers/outilsRouter");
 const categoriesRouter = require("../../Routers/categoriesRouter");
 
+// Mock authentication middleware
 jest.mock("../../middleware/authJwt", () => ({
   verifyToken: jest.fn((req, res, next) => {
     req.userId = "test-user-id";
+    req.user = { _id: "test-user-id", Admin: true }; // Set user as admin for tests
     next();
   }),
-  isAdmin: jest.fn((req, res, next) => next()),
-  isModeratorOrAdmin: jest.fn((req, res, next) => next()),
+  isAdmin: jest.fn((req, res, next) => {
+    if (req.user && req.user.Admin) {
+      next();
+    } else {
+      res.status(403).json({ error: "Admin access required" });
+    }
+  }),
+  isModeratorOrAdmin: jest.fn((req, res, next) => {
+    if (req.user && (req.user.Admin || req.user.isModerator)) {
+      next();
+    } else {
+      res.status(403).json({ error: "Moderator or Admin access required" });
+    }
+  }),
 }));
 
 jest.mock("../../middleware/verifySignUp", () => ({
@@ -24,6 +38,17 @@ jest.mock("../../Models/UserModel");
 jest.mock("../../Models/Avis");
 jest.mock("../../Models/Outil");
 jest.mock("../../Models/Categorie");
+
+// Mock bcrypt and jwt for authentication
+jest.mock("bcrypt", () => ({
+  hash: jest.fn().mockResolvedValue("hashedPassword123"),
+  compare: jest.fn().mockResolvedValue(true),
+}));
+
+jest.mock("jsonwebtoken", () => ({
+  sign: jest.fn().mockReturnValue("mock-jwt-token"),
+  verify: jest.fn().mockReturnValue({ userId: "test-user-id" }),
+}));
 
 describe("Routes Integration Tests", () => {
   let app;
@@ -228,6 +253,55 @@ describe("Routes Integration Tests", () => {
         expect(response.body[0].note).toBe(15);
       });
     });
+
+    describe("GET /avis/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app).get("/avis/invalid-id").expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+
+    describe("PUT /avis/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .put("/avis/invalid-id")
+          .set("Authorization", "Bearer valid-token")
+          .send({ message: "Updated review" })
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+
+    describe("DELETE /avis/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .delete("/avis/invalid-id")
+          .set("Authorization", "Bearer valid-token")
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+
+    describe("GET /avis/outil/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .get("/avis/outil/invalid-id")
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
   });
 
   describe("Outils Routes", () => {
@@ -260,7 +334,9 @@ describe("Routes Integration Tests", () => {
         ];
 
         outilModel.find.mockReturnValue({
-          populate: jest.fn().mockResolvedValue(mockOutils),
+          populate: jest.fn().mockReturnValue({
+            populate: jest.fn().mockResolvedValue(mockOutils),
+          }),
         });
 
         const response = await request(app)
@@ -269,6 +345,63 @@ describe("Routes Integration Tests", () => {
 
         expect(response.body).toHaveLength(2);
         expect(response.body[0].name).toContain("Test");
+      });
+
+      it("should return 400 when query parameter is missing", async () => {
+        const response = await request(app).get("/outils/search").expect(400);
+
+        expect(response.body.error).toBe("Query parameter 'q' is required");
+      });
+
+      it("should return 400 when query parameter is empty", async () => {
+        const response = await request(app)
+          .get("/outils/search?q=")
+          .expect(400);
+
+        expect(response.body.error).toBe("Query parameter 'q' is required");
+      });
+    });
+
+    describe("GET /outils/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .get("/outils/invalid-id")
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+
+      it("should return 400 for missing ID parameter", async () => {
+        const response = await request(app).get("/outils/").expect(404); // This will be caught by the general 404 handler
+      });
+    });
+
+    describe("PUT /outils/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .put("/outils/invalid-id")
+          .set("Authorization", "Bearer valid-token")
+          .send({ name: "Updated Tool" })
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+
+    describe("DELETE /outils/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .delete("/outils/invalid-id")
+          .set("Authorization", "Bearer valid-token")
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
       });
     });
   });
@@ -314,6 +447,84 @@ describe("Routes Integration Tests", () => {
         expect(response.body).toHaveProperty("_id");
         expect(response.body.name).toBe(categorieData.name);
         expect(response.body.description).toBe(categorieData.description);
+      });
+    });
+
+    describe("GET /categories/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .get("/categories/invalid-id")
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+
+    describe("PUT /categories/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .put("/categories/invalid-id")
+          .set("Authorization", "Bearer valid-token")
+          .send({ name: "Updated Category" })
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+
+    describe("DELETE /categories/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .delete("/categories/invalid-id")
+          .set("Authorization", "Bearer valid-token")
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+  });
+
+  describe("User Routes", () => {
+    describe("GET /user/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app).get("/user/invalid-id").expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+
+    describe("PUT /user/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .put("/user/invalid-id")
+          .set("Authorization", "Bearer valid-token")
+          .send({ name: "Updated User" })
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
+      });
+    });
+
+    describe("DELETE /user/:id", () => {
+      it("should return 400 for invalid ObjectId format", async () => {
+        const response = await request(app)
+          .delete("/user/invalid-id")
+          .set("Authorization", "Bearer valid-token")
+          .expect(400);
+
+        expect(response.body.error).toBe(
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string."
+        );
       });
     });
   });

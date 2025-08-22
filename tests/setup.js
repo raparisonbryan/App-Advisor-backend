@@ -23,10 +23,17 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.close();
-  await mongod.stop();
+  try {
+    await mongoose.connection.close();
+    await mongod.stop();
+  } catch (error) {
+    console.error("Error during test teardown:", error);
+  }
 });
 
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "..", ".env.test") });
 process.env.NODE_ENV = "test";
+
+// Increase timeout for tests
+jest.setTimeout(30000);

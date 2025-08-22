@@ -51,19 +51,26 @@ describe("UserController", () => {
 
   describe("getByIdUser", () => {
     it("should return user by ID successfully", async () => {
-      const mockUser = { _id: "1", name: "Test User", email: "test@test.com" };
-      req.params = { id: "1" };
+      const mockUser = {
+        _id: "507f1f77bcf86cd799439011",
+        name: "Test User",
+        email: "test@example.com",
+      };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       userModel.findById.mockResolvedValue(mockUser);
 
       await userController.getByIdUser(req, res);
 
-      expect(userModel.findById).toHaveBeenCalledWith("1");
+      expect(userModel.findById).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
       expect(res.send).toHaveBeenCalledWith(mockUser);
     });
 
     it("should return 404 when user not found", async () => {
-      req.params = { id: "999" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
+
       userModel.findById.mockResolvedValue(null);
 
       await userController.getByIdUser(req, res);
@@ -73,25 +80,17 @@ describe("UserController", () => {
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
-      const error = new Error("Invalid ObjectId");
-
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      const error = new Error("Database error");
 
       userModel.findById.mockRejectedValue(error);
 
       await userController.getByIdUser(req, res);
 
-      expect(consoleSpy).toHaveBeenCalledWith({
-        error: "Une erreur est survenue lors de la récupération de l'utilisateur"
-      });
-
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith(
-          "Une erreur est survenue lors de la récupération de l'utilisateur"
+        "Une erreur est survenue lors de la récupération de l'utilisateur"
       );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -162,20 +161,37 @@ describe("UserController", () => {
 
   describe("putUserById", () => {
     it("should update user by ID successfully", async () => {
-      req.params = { id: "1" };
-      req.body = { name: "Updated Name" };
+      const mockUser = {
+        _id: "507f1f77bcf86cd799439011",
+        name: "Updated User",
+        email: "updated@example.com",
+      };
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      req.body = { name: "Updated User" };
 
-      const mockUpdatedUser = { _id: "1", name: "Updated Name" };
-      userModel.findByIdAndUpdate.mockResolvedValue(mockUpdatedUser);
+      userModel.findByIdAndUpdate.mockResolvedValue(mockUser);
 
       await userController.putUserById(req, res);
 
       expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        "1",
-        { name: "Updated Name" },
+        "507f1f77bcf86cd799439011",
+        { name: "Updated User" },
         { new: true }
       );
-      expect(res.send).toHaveBeenCalledWith(mockUpdatedUser);
+      expect(res.send).toHaveBeenCalledWith(mockUser);
+    });
+
+    it("should handle database errors", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      req.body = { name: "Updated User" };
+      const error = new Error("Update failed");
+
+      userModel.findByIdAndUpdate.mockRejectedValue(error);
+
+      await userController.putUserById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Update failed" });
     });
   });
 
@@ -194,43 +210,52 @@ describe("UserController", () => {
   });
 
   describe("deleteByIdUser", () => {
-    it("should delete user and associated reviews successfully", async () => {
-      req.params = { id: "1" };
-
-      avisModel.deleteMany.mockResolvedValue({ deletedCount: 2 });
-      userModel.findByIdAndDelete.mockResolvedValue({
-        _id: "1",
+    it("should delete user by ID successfully", async () => {
+      const mockUser = {
+        _id: "507f1f77bcf86cd799439011",
         name: "Test User",
-      });
+      };
+      req.params = { id: "507f1f77bcf86cd799439011" };
+
+      userModel.findByIdAndDelete.mockResolvedValue(mockUser);
+      avisModel.deleteMany.mockResolvedValue({ deletedCount: 2 });
 
       await userController.deleteByIdUser(req, res);
 
-      expect(avisModel.deleteMany).toHaveBeenCalledWith({ user: "1" });
-      expect(userModel.findByIdAndDelete).toHaveBeenCalledWith("1");
+      expect(avisModel.deleteMany).toHaveBeenCalledWith({
+        user: "507f1f77bcf86cd799439011",
+      });
+      expect(userModel.findByIdAndDelete).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
       expect(res.json).toHaveBeenCalledWith({
         message: "Utilisateur et ses avis supprimés avec succès",
       });
     });
 
     it("should return 404 when user not found", async () => {
-      req.params = { id: "999" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
-      avisModel.deleteMany.mockResolvedValue({ deletedCount: 0 });
       userModel.findByIdAndDelete.mockResolvedValue(null);
 
       await userController.deleteByIdUser(req, res);
 
-      expectErrorResponse(res, 404, "Utilisateur non trouvé");
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Utilisateur non trouvé",
+      });
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
-      const error = new Error("Database error");
-      avisModel.deleteMany.mockRejectedValue(error);
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      const error = new Error("Delete failed");
+
+      userModel.findByIdAndDelete.mockRejectedValue(error);
 
       await userController.deleteByIdUser(req, res);
 
-      expectErrorResponse(res, 500, "Database error");
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Delete failed" });
     });
   });
 

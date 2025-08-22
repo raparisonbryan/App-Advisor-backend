@@ -86,7 +86,7 @@ const deleteByIdUser = async (request, response) => {
 
 const signup = async (request, response) => {
   try {
-    let input = request.body;
+    const input = request.body;
     input.password = await bcrypt.hash(input.password, 10);
     const newUser = new userModel(input);
     const result = await newUser.save();
@@ -100,19 +100,34 @@ const signup = async (request, response) => {
 };
 
 const signin = async (request, response) => {
-  let input = request.body;
-  let userExist = await userModel.findOne({ email: input.email });
+  const { email, password } = request.body;
+
+  if (!email || !password) {
+    return response.status(400).json({ msg: "Email et mot de passe requis" });
+  }
+
+  if (
+    !email.includes("@") ||
+    !email.includes(".") ||
+    email.length < 5 ||
+    email.length > 254
+  ) {
+    return response.status(400).json({ msg: "Format d'email invalide" });
+  }
+
+  const sanitizedEmail = email.trim().toLowerCase();
+  const userExist = await userModel.findOne({ email: sanitizedEmail });
   if (!userExist) {
     return response.status(404).json({ msg: "Utilisateur introuvable" });
   }
-  const validPass = await bcrypt.compare(input.password, userExist.password);
+  const validPass = await bcrypt.compare(password, userExist.password);
   if (!validPass) {
     return response.status(400).json({ msg: "Mot de passe incorrect" });
   }
   const token = jwt.sign({ userId: userExist._id }, secret, {
     expiresIn: "24h",
   });
-  // Générer et stocker le refresh token
+
   const refreshToken = generateRefreshToken();
   userExist.refreshToken = refreshToken;
   await userExist.save();
@@ -125,7 +140,7 @@ const signin = async (request, response) => {
     httpOnly: true,
     sameSite: "strict",
     path: "/user/refresh-token",
-    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
   return response.status(200).json({
     user: {
@@ -143,7 +158,6 @@ const generateRefreshToken = () => {
   return crypto.randomBytes(64).toString("hex");
 };
 
-// Nouvelle route pour refresh token
 const refreshToken = async (request, response) => {
   try {
     const refreshToken =
@@ -155,7 +169,7 @@ const refreshToken = async (request, response) => {
     if (!user) {
       return response.status(403).json({ msg: "Refresh token invalide" });
     }
-    // Générer un nouveau JWT d'accès et un nouveau refresh token
+
     const newToken = jwt.sign({ userId: user._id }, secret, {
       expiresIn: "24h",
     });
@@ -183,11 +197,9 @@ const refreshToken = async (request, response) => {
 
 const logout = async (request, response) => {
   try {
-    // Récupérer le refreshToken depuis le cookie
     const refreshToken =
       request.cookies.refreshToken || request.body.refreshToken;
     if (!refreshToken) {
-      // On efface quand même les cookies côté client
       response.clearCookie("token");
       response.clearCookie("refreshToken", { path: "/user/refresh-token" });
       return response.status(200).json({ msg: "Déconnecté." });

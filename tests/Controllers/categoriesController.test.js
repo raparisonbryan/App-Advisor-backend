@@ -49,25 +49,28 @@ describe("CategoriesController", () => {
 
   describe("getByIdCategories", () => {
     it("should return category by ID successfully", async () => {
-      const mockCategorie = {
-        _id: "1",
+      const mockCategory = {
+        _id: "507f1f77bcf86cd799439011",
         name: "Test Category",
         description: "Test Description",
       };
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       categorieModel.findById.mockReturnValue({
-        populate: jest.fn().mockResolvedValue(mockCategorie),
+        populate: jest.fn().mockResolvedValue(mockCategory),
       });
 
       await categoriesController.getByIdCategories(req, res);
 
-      expect(categorieModel.findById).toHaveBeenCalledWith("1");
-      expect(res.send).toHaveBeenCalledWith(mockCategorie);
+      expect(categorieModel.findById).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
+      expect(res.send).toHaveBeenCalledWith(mockCategory);
     });
 
     it("should return 404 when category not found", async () => {
-      req.params = { id: "999" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
+
       categorieModel.findById.mockReturnValue({
         populate: jest.fn().mockResolvedValue(null),
       });
@@ -79,15 +82,16 @@ describe("CategoriesController", () => {
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
-      const error = new Error("Invalid ObjectId");
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      const error = new Error("Database error");
+
       categorieModel.findById.mockReturnValue({
         populate: jest.fn().mockRejectedValue(error),
       });
 
       await categoriesController.getByIdCategories(req, res);
 
-      expectErrorResponse(res, 500, "Invalid ObjectId");
+      expectErrorResponse(res, 500, "Database error");
     });
   });
 
@@ -122,28 +126,46 @@ describe("CategoriesController", () => {
   });
 
   describe("updateCategoriesById", () => {
-    it("should update category successfully", async () => {
-      req.params = { id: "1" };
-      req.body = { name: "Updated Category Name" };
+    it("should update category by ID successfully", async () => {
+      const mockCategory = {
+        _id: "507f1f77bcf86cd799439011",
+        name: "Updated Category",
+        description: "Updated Description",
+      };
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      req.body = { name: "Updated Category" };
 
-      const mockUpdatedCategorie = { _id: "1", name: "Updated Category Name" };
       categorieModel.findByIdAndUpdate.mockReturnValue({
-        populate: jest.fn().mockResolvedValue(mockUpdatedCategorie),
+        populate: jest.fn().mockResolvedValue(mockCategory),
       });
 
       await categoriesController.updateCategoriesById(req, res);
 
       expect(categorieModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        "1",
-        { name: "Updated Category Name" },
+        "507f1f77bcf86cd799439011",
+        { name: "Updated Category" },
         { new: true }
       );
-      expect(res.send).toHaveBeenCalledWith(mockUpdatedCategorie);
+      expect(res.send).toHaveBeenCalledWith(mockCategory);
+    });
+
+    it("should return 404 when category not found", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      req.body = { name: "Updated Category" };
+
+      categorieModel.findByIdAndUpdate.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      });
+
+      await categoriesController.updateCategoriesById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "Catégorie non trouvée" });
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
-      req.body = { name: "Updated Name" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      req.body = { name: "Updated Category" };
       const error = new Error("Update failed");
 
       categorieModel.findByIdAndUpdate.mockReturnValue({
@@ -157,20 +179,36 @@ describe("CategoriesController", () => {
   });
 
   describe("deleteByIdCategories", () => {
-    it("should delete category successfully", async () => {
-      req.params = { id: "1" };
+    it("should delete category by ID successfully", async () => {
+      const mockCategory = {
+        _id: "507f1f77bcf86cd799439011",
+        name: "Test Category",
+      };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
-      const mockResult = { _id: "1", deleted: true };
-      categorieModel.findByIdAndDelete.mockResolvedValue(mockResult);
+      categorieModel.findByIdAndDelete.mockResolvedValue(mockCategory);
 
       await categoriesController.deleteByIdCategories(req, res);
 
-      expect(categorieModel.findByIdAndDelete).toHaveBeenCalledWith("1");
-      expect(res.send).toHaveBeenCalledWith(mockResult);
+      expect(categorieModel.findByIdAndDelete).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
+      expect(res.send).toHaveBeenCalledWith(mockCategory);
+    });
+
+    it("should return 404 when category not found", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
+
+      categorieModel.findByIdAndDelete.mockResolvedValue(null);
+
+      await categoriesController.deleteByIdCategories(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "Catégorie non trouvée" });
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
       const error = new Error("Delete failed");
 
       categorieModel.findByIdAndDelete.mockRejectedValue(error);
