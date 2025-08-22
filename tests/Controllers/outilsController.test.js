@@ -59,11 +59,11 @@ describe("OutilsController", () => {
   describe("getByIdOutils", () => {
     it("should return tool by ID successfully", async () => {
       const mockOutil = {
-        _id: "1",
+        _id: "507f1f77bcf86cd799439011",
         name: "Test Tool",
         description: "Test Description",
       };
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       outilModel.findById.mockReturnValue({
         populate: jest.fn().mockReturnValue({
@@ -73,12 +73,14 @@ describe("OutilsController", () => {
 
       await outilsController.getByIdOutils(req, res);
 
-      expect(outilModel.findById).toHaveBeenCalledWith("1");
+      expect(outilModel.findById).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
       expect(res.send).toHaveBeenCalledWith(mockOutil);
     });
 
-    it("should return null when tool not found", async () => {
-      req.params = { id: "999" };
+    it("should return 404 when tool not found", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       outilModel.findById.mockReturnValue({
         populate: jest.fn().mockReturnValue({
@@ -88,11 +90,36 @@ describe("OutilsController", () => {
 
       await outilsController.getByIdOutils(req, res);
 
-      expect(res.send).toHaveBeenCalledWith(null);
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "Outil not found" });
+    });
+
+    it("should return 400 for invalid ObjectId format", async () => {
+      req.params = { id: "invalid-id" };
+
+      await outilsController.getByIdOutils(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
+    });
+
+    it("should return 400 for missing ID parameter", async () => {
+      req.params = {};
+
+      await outilsController.getByIdOutils(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
       const error = new Error("Invalid ObjectId");
 
       outilModel.findById.mockReturnValue({
@@ -104,6 +131,129 @@ describe("OutilsController", () => {
       await outilsController.getByIdOutils(req, res);
 
       expectErrorResponse(res, 500, "Invalid ObjectId");
+    });
+  });
+
+  describe("searchOutils", () => {
+    it("should search tools by query successfully", async () => {
+      const mockOutils = [
+        { _id: "1", name: "Test Tool 1", description: "Test Description 1" },
+        { _id: "2", name: "Test Tool 2", description: "Test Description 2" },
+      ];
+      req.query = { q: "test" };
+
+      outilModel.find.mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          populate: jest.fn().mockResolvedValue(mockOutils),
+        }),
+      });
+
+      await outilsController.searchOutils(req, res);
+
+      expect(outilModel.find).toHaveBeenCalledWith({
+        $or: [{ name: /test/i }, { description: /test/i }],
+      });
+      expect(res.send).toHaveBeenCalledWith(mockOutils);
+    });
+
+    it("should return 400 when query parameter is missing", async () => {
+      req.query = {};
+
+      await outilsController.searchOutils(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Query parameter 'q' is required",
+      });
+    });
+
+    it("should return 400 when query parameter is empty", async () => {
+      req.query = { q: "" };
+
+      await outilsController.searchOutils(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Query parameter 'q' is required",
+      });
+    });
+
+    it("should handle database errors", async () => {
+      req.query = { q: "test" };
+      const error = new Error("Database connection failed");
+
+      outilModel.find.mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          populate: jest.fn().mockRejectedValue(error),
+        }),
+      });
+
+      await outilsController.searchOutils(req, res);
+
+      expectErrorResponse(res, 500, "Database connection failed");
+    });
+  });
+
+  describe("getOutilCategories", () => {
+    it("should return tool categories successfully", async () => {
+      const mockOutil = {
+        _id: "507f1f77bcf86cd799439011",
+        name: "Test Tool",
+        categories: [
+          { _id: "cat1", name: "Category 1" },
+          { _id: "cat2", name: "Category 2" },
+        ],
+      };
+      req.params = { id: "507f1f77bcf86cd799439011" };
+
+      outilModel.findById.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(mockOutil),
+      });
+
+      await outilsController.getOutilCategories(req, res);
+
+      expect(outilModel.findById).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
+      expect(res.send).toHaveBeenCalledWith(mockOutil.categories);
+    });
+
+    it("should return 404 when tool not found", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
+
+      outilModel.findById.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      });
+
+      await outilsController.getOutilCategories(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "Outil non trouvé" });
+    });
+
+    it("should return 400 for invalid ObjectId format", async () => {
+      req.params = { id: "invalid-id" };
+
+      await outilsController.getOutilCategories(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
+    });
+
+    it("should handle database errors", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      const error = new Error("Database error");
+
+      outilModel.findById.mockReturnValue({
+        populate: jest.fn().mockRejectedValue(error),
+      });
+
+      await outilsController.getOutilCategories(req, res);
+
+      expectErrorResponse(res, 500, "Database error");
     });
   });
 
@@ -139,11 +289,18 @@ describe("OutilsController", () => {
 
   describe("updateOutilsById", () => {
     it("should update tool successfully", async () => {
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
       req.body = { name: "Updated Tool Name" };
 
-      const mockOldOutil = { _id: "1", name: "Old Name", categories: [] };
-      const mockUpdatedOutil = { _id: "1", name: "Updated Tool Name" };
+      const mockOldOutil = {
+        _id: "507f1f77bcf86cd799439011",
+        name: "Old Name",
+        categories: [],
+      };
+      const mockUpdatedOutil = {
+        _id: "507f1f77bcf86cd799439011",
+        name: "Updated Tool Name",
+      };
 
       outilModel.findById.mockResolvedValue(mockOldOutil);
       outilModel.findByIdAndUpdate.mockReturnValue({
@@ -152,21 +309,51 @@ describe("OutilsController", () => {
 
       await outilsController.updateOutilsById(req, res);
 
-      expect(outilModel.findById).toHaveBeenCalledWith("1");
+      expect(outilModel.findById).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
       expect(outilModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        "1",
+        "507f1f77bcf86cd799439011",
         { name: "Updated Tool Name" },
         { new: true }
       );
       expect(res.send).toHaveBeenCalledWith(mockUpdatedOutil);
     });
 
+    it("should return 400 for invalid ObjectId format", async () => {
+      req.params = { id: "invalid-id" };
+      req.body = { name: "Updated Name" };
+
+      await outilsController.updateOutilsById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
+    });
+
+    it("should return 404 when tool not found", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      req.body = { name: "Updated Name" };
+
+      outilModel.findById.mockResolvedValue(null);
+
+      await outilsController.updateOutilsById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: "Outil not found" });
+    });
+
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
       req.body = { name: "Updated Name" };
       const error = new Error("Update failed");
 
-      outilModel.findById.mockResolvedValue({ _id: "1", categories: [] });
+      outilModel.findById.mockResolvedValue({
+        _id: "507f1f77bcf86cd799439011",
+        categories: [],
+      });
       outilModel.findByIdAndUpdate.mockReturnValue({
         populate: jest.fn().mockRejectedValue(error),
       });
@@ -179,10 +366,14 @@ describe("OutilsController", () => {
 
   describe("deleteByIdOutils", () => {
     it("should delete tool successfully", async () => {
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
-      const mockOutil = { _id: "1", name: "Test Tool", categories: [] };
-      const mockResult = { _id: "1", deleted: true };
+      const mockOutil = {
+        _id: "507f1f77bcf86cd799439011",
+        name: "Test Tool",
+        categories: [],
+      };
+      const mockResult = { _id: "507f1f77bcf86cd799439011", deleted: true };
 
       outilModel.findById.mockResolvedValue(mockOutil);
       outilModel.findByIdAndDelete.mockResolvedValue(mockResult);
@@ -193,13 +384,29 @@ describe("OutilsController", () => {
 
       await outilsController.deleteByIdOutils(req, res);
 
-      expect(outilModel.findById).toHaveBeenCalledWith("1");
-      expect(outilModel.findByIdAndDelete).toHaveBeenCalledWith("1");
+      expect(outilModel.findById).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
+      expect(outilModel.findByIdAndDelete).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
       expect(res.send).toHaveBeenCalledWith(mockResult);
     });
 
+    it("should return 400 for invalid ObjectId format", async () => {
+      req.params = { id: "invalid-id" };
+
+      await outilsController.deleteByIdOutils(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
+    });
+
     it("should return 404 when tool not found", async () => {
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       outilModel.findById.mockResolvedValue(null);
 
@@ -210,7 +417,7 @@ describe("OutilsController", () => {
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
       const error = new Error("Delete failed");
 
       outilModel.findById.mockRejectedValue(error);
@@ -237,8 +444,8 @@ describe("OutilsController extended", () => {
   describe("postManyOutils", () => {
     it("should create multiple tools and update categories", async () => {
       req.body = [
-        {name: "t1", categories: ["c1", "c2"]},
-        {name: "t2", categories: []},
+        { name: "t1", categories: ["c1", "c2"] },
+        { name: "t2", categories: [] },
       ];
 
       const saved1 = { _id: "o1" };
@@ -246,7 +453,9 @@ describe("OutilsController extended", () => {
       const saveMock1 = jest.fn().mockResolvedValue(saved1);
       const saveMock2 = jest.fn().mockResolvedValue(saved2);
       let call = 0;
-      outilModel.mockImplementation(() => ({ save: (++call === 1) ? saveMock1 : saveMock2 }));
+      outilModel.mockImplementation(() => ({
+        save: ++call === 1 ? saveMock1 : saveMock2,
+      }));
 
       categorieModel.updateMany.mockResolvedValue({ modifiedCount: 1 });
 
@@ -266,7 +475,9 @@ describe("OutilsController extended", () => {
     it("should create single tool when body is not array", async () => {
       req.body = { name: "single", categories: ["c3"] };
       const saved = { _id: "o3", name: "single" };
-      outilModel.mockImplementation(() => ({ save: jest.fn().mockResolvedValue(saved) }));
+      outilModel.mockImplementation(() => ({
+        save: jest.fn().mockResolvedValue(saved),
+      }));
 
       await outilsController.postManyOutils(req, res);
 
@@ -281,7 +492,7 @@ describe("OutilsController extended", () => {
 
   describe("updateOutilCategories", () => {
     it("should update categories transactionally", async () => {
-      req.params = { id: "oid" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
       req.body = { categories: ["nc1", "nc2"] };
 
       // mock session
@@ -293,7 +504,11 @@ describe("OutilsController extended", () => {
       };
       startSession.mockResolvedValue(session);
 
-      const outil = { _id: "oid", categories: ["oc1"], save: jest.fn().mockResolvedValue(true) };
+      const outil = {
+        _id: "507f1f77bcf86cd799439011",
+        categories: ["oc1"],
+        save: jest.fn().mockResolvedValue(true),
+      };
       // findById().session(session)
       const sessionFn = jest.fn().mockResolvedValue(outil);
       outilModel.findById.mockReturnValue({ session: sessionFn });
@@ -307,35 +522,132 @@ describe("OutilsController extended", () => {
       expect(outil.save).toHaveBeenCalledWith({ session });
       expect(session.commitTransaction).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true })
+      );
       expect(session.endSession).toHaveBeenCalled();
+    });
+
+    it("should return 400 for invalid ObjectId format", async () => {
+      req.params = { id: "invalid-id" };
+      req.body = { categories: ["nc1", "nc2"] };
+
+      await outilsController.updateOutilCategories(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
+    });
+
+    it("should handle transaction errors", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      req.body = { categories: ["nc1", "nc2"] };
+
+      const session = {
+        startTransaction: jest.fn(),
+        abortTransaction: jest.fn(),
+        commitTransaction: jest.fn(),
+        endSession: jest.fn(),
+      };
+      startSession.mockResolvedValue(session);
+
+      const error = new Error("Transaction failed");
+      const sessionFn = jest.fn().mockRejectedValue(error);
+      outilModel.findById.mockReturnValue({ session: sessionFn });
+
+      await outilsController.updateOutilCategories(req, res);
+
+      expect(session.abortTransaction).toHaveBeenCalled();
+      expect(session.endSession).toHaveBeenCalled();
+      expectErrorResponse(res, 500, "Transaction failed");
     });
   });
 
   describe("syncAvisToOutils", () => {
     it("should add avis ids to outils", async () => {
-      const avis = [ { _id: "a1", outils: "o1" }, { _id: "a2", outils: null } ];
+      const avis = [
+        { _id: "a1", outils: "507f1f77bcf86cd799439011" },
+        { _id: "a2", outils: null },
+      ];
       avisModel.find.mockResolvedValue(avis);
       outilModel.findByIdAndUpdate.mockResolvedValue({});
 
       await outilsController.syncAvisToOutils(req, res);
 
       expect(outilModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        "o1",
+        "507f1f77bcf86cd799439011",
         { $addToSet: { avis: "a1" } }
       );
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ totalAvis: avis.length }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalAvis: avis.length,
+          errors: 0,
+        })
+      );
+    });
+
+    it("should skip invalid ObjectId formats", async () => {
+      const avis = [
+        { _id: "a1", outils: "invalid-id" },
+        { _id: "a2", outils: "507f1f77bcf86cd799439011" },
+      ];
+      avisModel.find.mockResolvedValue(avis);
+      outilModel.findByIdAndUpdate.mockResolvedValue({});
+
+      await outilsController.syncAvisToOutils(req, res);
+
+      expect(outilModel.findByIdAndUpdate).toHaveBeenCalledTimes(1);
+      expect(outilModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011",
+        { $addToSet: { avis: "a2" } }
+      );
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalAvis: avis.length,
+          errors: 0,
+        })
+      );
+    });
+
+    it("should handle individual update errors", async () => {
+      const avis = [{ _id: "a1", outils: "507f1f77bcf86cd799439011" }];
+      avisModel.find.mockResolvedValue(avis);
+
+      const error = new Error("Update failed");
+      outilModel.findByIdAndUpdate.mockRejectedValue(error);
+
+      await outilsController.syncAvisToOutils(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalAvis: avis.length,
+          errors: 1,
+        })
+      );
+    });
+
+    it("should handle database errors", async () => {
+      const error = new Error("Database connection failed");
+      avisModel.find.mockRejectedValue(error);
+
+      await outilsController.syncAvisToOutils(req, res);
+
+      expectErrorResponse(res, 500, "Database connection failed");
     });
   });
 
   describe("syncMoyennes", () => {
     it("should compute averages and update outils", async () => {
       outilModel.updateMany.mockResolvedValue({ modifiedCount: 3 });
-      const outils = [ { _id: "o1" }, { _id: "o2" } ];
+      const outils = [{ _id: "o1" }, { _id: "o2" }];
       outilModel.find.mockResolvedValue(outils);
       avisModel.find
-        .mockResolvedValueOnce([ { note: 10, difficulte: 10, performance: 10, flexibilite: 10 } ])
+        .mockResolvedValueOnce([
+          { note: 10, difficulte: 10, performance: 10, flexibilite: 10 },
+        ])
         .mockResolvedValueOnce([]);
       outilModel.findByIdAndUpdate.mockResolvedValue({});
 
@@ -346,14 +658,18 @@ describe("OutilsController extended", () => {
         expect.objectContaining({ moyenneNote: 10, nombreAvis: 1 })
       );
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ totalOutils: 2 }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ totalOutils: 2 })
+      );
     });
   });
 
   describe("cleanupData", () => {
     it("should return deleted count from cleanup util", async () => {
       jest.resetModules();
-      const mockCleanup = { cleanupOrphanedAvis: jest.fn().mockResolvedValue({ deletedCount: 5 }) };
+      const mockCleanup = {
+        cleanupOrphanedAvis: jest.fn().mockResolvedValue({ deletedCount: 5 }),
+      };
       jest.doMock("../../utils/cleanup", () => mockCleanup);
       const ctrl = require("../../Controllers/outilsController");
 

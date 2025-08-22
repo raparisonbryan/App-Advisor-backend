@@ -2,54 +2,107 @@ const outilsModel = require("../Models/Outil");
 const { logger } = require("../utils/logger");
 const avisModel = require("../Models/Avis");
 const Categorie = require("../Models/Categorie");
-const {startSession} = require("mongoose");
+const { startSession } = require("mongoose");
 const { cloudinary } = require("../utils/cloudinary");
-const {cleanupOrphanedAvis} = require("../utils/cleanup");
+const { cleanupOrphanedAvis } = require("../utils/cleanup");
 
 const getManyOutils = async (request, response) => {
   try {
-    let query = outilsModel.find();
-    if (query && typeof query.populate === 'function') {
-      query = query.populate("categories", "name imageURL");
-      if (query && typeof query.populate === 'function') {
-        query = query.populate("avis", "message note difficulte performance flexibilite user");
-      }
-    }
-    const result = await query;
+    const result = await outilsModel
+      .find()
+      .populate("categories", "name imageURL")
+      .populate("avis", "message note difficulte performance flexibilite user");
     response.send(result);
   } catch (error) {
+    logger.error("Error in function", {
+      error: error.message,
+      stack: error.stack,
+    });
+    response.status(500).json({ error: error.message });
+  }
+};
+
+const searchOutils = async (request, response) => {
+  try {
+    const { q } = request.query;
+
+    if (!q) {
+      return response
+        .status(400)
+        .json({ error: "Query parameter 'q' is required" });
+    }
+
+    const searchRegex = new RegExp(q, "i");
+    const result = await outilsModel
+      .find({
+        $or: [{ name: searchRegex }, { description: searchRegex }],
+      })
+      .populate("categories", "name imageURL")
+      .populate("avis", "message note difficulte performance flexibilite user");
+
+    response.send(result);
+  } catch (error) {
+    logger.error("Error in searchOutils function", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
 
 const getByIdOutils = async (request, response) => {
   try {
-    let query = outilsModel.findById(request.params.id);
-    if (query && typeof query.populate === 'function') {
-      query = query.populate("categories", "name imageURL");
-      if (query && typeof query.populate === 'function') {
-        query = query.populate("avis", "message note difficulte performance flexibilite user");
-      }
+    const { id } = request.params;
+
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return response.status(400).json({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
     }
-    const result = await query;
+
+    const result = await outilsModel
+      .findById(id)
+      .populate("categories", "name imageURL")
+      .populate("avis", "message note difficulte performance flexibilite user");
+
+    if (!result) {
+      return response.status(404).json({ error: "Outil not found" });
+    }
+
     response.send(result);
   } catch (error) {
-    logger.error("Error in function", { error: error.message, stack: error.stack });
+    logger.error("Error in getByIdOutils function", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
 
 const getOutilCategories = async (req, res) => {
   try {
-    const outilId = req.params.id;
+    const { id } = req.params;
+
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return res.status(400).json({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
+    }
+
     const outil = await outilsModel
-        .findById(outilId)
-        .populate("categories", "name imageURL");
+      .findById(id)
+      .populate("categories", "name imageURL");
 
     if (!outil) return res.status(404).json({ error: "Outil non trouvé" });
 
     res.send(outil.categories);
   } catch (err) {
+    logger.error("Error in getOutilCategories function", {
+      error: err.message,
+      stack: err.stack,
+    });
     res.status(500).json({ error: err.message });
   }
 };
@@ -70,8 +123,8 @@ const postOutils = async (req, res) => {
 
     if (input.categories && input.categories.length > 0) {
       await Categorie.updateMany(
-          { _id: { $in: input.categories } },
-          { $push: { outils: savedOutil._id } }
+        { _id: { $in: input.categories } },
+        { $push: { outils: savedOutil._id } }
       );
     }
 
@@ -81,7 +134,6 @@ const postOutils = async (req, res) => {
     res.status(500).json({ error: error.message || error });
   }
 };
-
 
 const postManyOutils = async (req, res) => {
   try {
@@ -94,13 +146,13 @@ const postManyOutils = async (req, res) => {
         const savedOutil = await outil.save();
 
         if (outilData.categories && outilData.categories.length > 0) {
-          const categoryIds = outilData.categories.map(cat =>
-              typeof cat === 'object' ? cat._id : cat
+          const categoryIds = outilData.categories.map((cat) =>
+            typeof cat === "object" ? cat._id : cat
           );
 
           await Categorie.updateMany(
-              { _id: { $in: categoryIds } },
-              { $push: { outils: savedOutil._id } }
+            { _id: { $in: categoryIds } },
+            { $push: { outils: savedOutil._id } }
           );
         }
 
@@ -116,13 +168,13 @@ const postManyOutils = async (req, res) => {
       const savedOutil = await outil.save();
 
       if (input.categories && input.categories.length > 0) {
-        const categoryIds = input.categories.map(cat =>
-            typeof cat === 'object' ? cat._id : cat
+        const categoryIds = input.categories.map((cat) =>
+          typeof cat === "object" ? cat._id : cat
         );
 
         await Categorie.updateMany(
-            { _id: { $in: categoryIds } },
-            { $push: { outils: savedOutil._id } }
+          { _id: { $in: categoryIds } },
+          { $push: { outils: savedOutil._id } }
         );
       }
 
@@ -135,108 +187,154 @@ const postManyOutils = async (req, res) => {
 
 const updateOutilsById = async (request, response) => {
   try {
+    const { id } = request.params;
+
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return response.status(400).json({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
+    }
+
     const input = request.body;
-    const oldOutil = await outilsModel.findById(request.params.id);
+    const oldOutil = await outilsModel.findById(id);
+
+    if (!oldOutil) {
+      return response.status(404).json({ error: "Outil not found" });
+    }
 
     if (request.file) {
       if (oldOutil.imageURL) {
-        const publicId = oldOutil.imageURL.split('/').pop().split('.')[0];
+        const publicId = oldOutil.imageURL.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`outils/${publicId}`);
       }
       input.imageURL = request.file.path;
     }
 
     const result = await outilsModel
-        .findByIdAndUpdate(request.params.id, input, { new: true })
-        .populate("categories", "name imageURL");
+      .findByIdAndUpdate(id, input, { new: true })
+      .populate("categories", "name imageURL");
 
     if (input.categories) {
       if (oldOutil.categories && oldOutil.categories.length > 0) {
         await Categorie.updateMany(
-            { _id: { $in: oldOutil.categories } },
-            { $pull: { outils: request.params.id } }
+          { _id: { $in: oldOutil.categories } },
+          { $pull: { outils: id } }
         );
       }
 
       if (input.categories.length > 0) {
         await Categorie.updateMany(
-            { _id: { $in: input.categories } },
-            { $addToSet: { outils: request.params.id } }
+          { _id: { $in: input.categories } },
+          { $addToSet: { outils: id } }
         );
       }
     }
 
     response.send(result);
   } catch (error) {
+    logger.error("Error in updateOutilsById function", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
 
 const updateOutilCategories = async (req, res) => {
-  const outilId = req.params.id;
-  const newCategoryIds = req.body.categories;
-
-  const session = await startSession();
-  session.startTransaction();
-
   try {
-    const outil = await outilsModel.findById(outilId).session(session);
-    if (!outil) {
-      await session.abortTransaction();
-      await session.endSession();
-      return res.status(404).json({ error: "Outil non trouvé" });
+    const { id } = req.params;
+
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return res.status(400).json({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
     }
 
-    const oldCategoryIds = outil.categories || [];
+    const newCategoryIds = req.body.categories;
 
-    await Categorie.updateMany(
+    const session = await startSession();
+    session.startTransaction();
+
+    try {
+      const outil = await outilsModel.findById(id).session(session);
+      if (!outil) {
+        await session.abortTransaction();
+        await session.endSession();
+        return res.status(404).json({ error: "Outil non trouvé" });
+      }
+
+      const oldCategoryIds = outil.categories || [];
+
+      await Categorie.updateMany(
         { _id: { $in: oldCategoryIds } },
-        { $pull: { outils: outilId } },
+        { $pull: { outils: id } },
         { session }
-    );
+      );
 
-    await Categorie.updateMany(
+      await Categorie.updateMany(
         { _id: { $in: newCategoryIds } },
-        { $addToSet: { outils: outilId } },
+        { $addToSet: { outils: id } },
         { session }
-    );
+      );
 
-    outil.categories = newCategoryIds;
-    await outil.save({ session });
+      outil.categories = newCategoryIds;
+      await outil.save({ session });
 
-    await session.commitTransaction();
-    res.status(200).json({ success: true, outil });
+      await session.commitTransaction();
+      res.status(200).json({ success: true, outil });
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
   } catch (error) {
-    await session.abortTransaction();
+    logger.error("Error in updateOutilCategories function", {
+      error: error.message,
+      stack: error.stack,
+    });
     res.status(500).json({ error: error.message });
-  } finally {
-    await session.endSession();
   }
 };
 
 const deleteByIdOutils = async (request, response) => {
   try {
-    const outil = await outilsModel.findById(request.params.id);
+    const { id } = request.params;
+
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return response.status(400).json({
+        error:
+          "Invalid ObjectId format. ID must be a 24-character hexadecimal string.",
+      });
+    }
+
+    const outil = await outilsModel.findById(id);
 
     if (!outil) {
       return response.status(404).json({ error: "Outil non trouvé" });
     }
 
     if (outil.imageURL) {
-      const publicId = outil.imageURL.split('/').pop().split('.')[0];
+      const publicId = outil.imageURL.split("/").pop().split(".")[0];
       await cloudinary.uploader.destroy(`outils/${publicId}`);
     }
 
     if (outil.categories && outil.categories.length > 0) {
       await Categorie.updateMany(
-          { _id: { $in: outil.categories } },
-          { $pull: { outils: request.params.id } }
+        { _id: { $in: outil.categories } },
+        { $pull: { outils: id } }
       );
     }
-    await avisModel.deleteMany({ outils: request.params.id });
-    const result = await outilsModel.findByIdAndDelete(request.params.id);
+    await avisModel.deleteMany({ outils: id });
+    const result = await outilsModel.findByIdAndDelete(id);
     response.send(result);
   } catch (error) {
+    logger.error("Error in deleteByIdOutils function", {
+      error: error.message,
+      stack: error.stack,
+    });
     response.status(500).json({ error: error.message });
   }
 };
@@ -245,23 +343,44 @@ const syncAvisToOutils = async (req, res) => {
   try {
     const avis = await avisModel.find();
     let updated = 0;
+    let errors = 0;
 
     for (const avisItem of avis) {
       if (avisItem.outils) {
-        const result = await outilsModel.findByIdAndUpdate(
-            avisItem.outils,
-            { $addToSet: { avis: avisItem._id } }
-        );
-        if (result) updated++;
+        try {
+          if (!/^[0-9a-fA-F]{24}$/.test(avisItem.outils.toString())) {
+            logger.warn("Invalid ObjectId format in avis", {
+              avisId: avisItem._id,
+              outilsId: avisItem.outils,
+            });
+            continue;
+          }
+
+          const result = await outilsModel.findByIdAndUpdate(avisItem.outils, {
+            $addToSet: { avis: avisItem._id },
+          });
+          if (result) updated++;
+        } catch (error) {
+          logger.error("Error updating outil for avis", {
+            avisId: avisItem._id,
+            outilsId: avisItem.outils,
+            error: error.message,
+          });
+          errors++;
+        }
       }
     }
 
     res.status(200).json({
       message: `Synchronisation terminée. ${updated} outils mis à jour.`,
-      totalAvis: avis.length
+      totalAvis: avis.length,
+      errors: errors,
     });
-
   } catch (error) {
+    logger.error("Error in syncAvisToOutils function", {
+      error: error.message,
+      stack: error.stack,
+    });
     res.status(500).json({ error: error.message });
   }
 };
@@ -269,16 +388,16 @@ const syncAvisToOutils = async (req, res) => {
 const syncMoyennes = async (req, res) => {
   try {
     const updateResult = await outilsModel.updateMany(
-        {},
-        {
-          $set: {
-            moyenneNote: 0,
-            moyenneDifficulte: 0,
-            moyennePerformance: 0,
-            moyenneFlexibilite: 0,
-            nombreAvis: 0
-          }
-        }
+      {},
+      {
+        $set: {
+          moyenneNote: 0,
+          moyenneDifficulte: 0,
+          moyennePerformance: 0,
+          moyenneFlexibilite: 0,
+          nombreAvis: 0,
+        },
+      }
     );
 
     const outils = await outilsModel.find();
@@ -288,22 +407,28 @@ const syncMoyennes = async (req, res) => {
       const avisOutil = await avisModel.find({ outils: outil._id });
 
       if (avisOutil.length > 0) {
-        const totaux = avisOutil.reduce((acc, avis) => {
-          acc.note += avis.note || 0;
-          acc.difficulte += avis.difficulte || 0;
-          acc.performance += avis.performance || 0;
-          acc.flexibilite += avis.flexibilite || 0;
-          return acc;
-        }, { note: 0, difficulte: 0, performance: 0, flexibilite: 0 });
+        const totaux = avisOutil.reduce(
+          (acc, avis) => {
+            acc.note += avis.note || 0;
+            acc.difficulte += avis.difficulte || 0;
+            acc.performance += avis.performance || 0;
+            acc.flexibilite += avis.flexibilite || 0;
+            return acc;
+          },
+          { note: 0, difficulte: 0, performance: 0, flexibilite: 0 }
+        );
 
         const nombreAvis = avisOutil.length;
 
         await outilsModel.findByIdAndUpdate(outil._id, {
           moyenneNote: Math.round((totaux.note / nombreAvis) * 100) / 100,
-          moyenneDifficulte: Math.round((totaux.difficulte / nombreAvis) * 100) / 100,
-          moyennePerformance: Math.round((totaux.performance / nombreAvis) * 100) / 100,
-          moyenneFlexibilite: Math.round((totaux.flexibilite / nombreAvis) * 100) / 100,
-          nombreAvis: nombreAvis
+          moyenneDifficulte:
+            Math.round((totaux.difficulte / nombreAvis) * 100) / 100,
+          moyennePerformance:
+            Math.round((totaux.performance / nombreAvis) * 100) / 100,
+          moyenneFlexibilite:
+            Math.round((totaux.flexibilite / nombreAvis) * 100) / 100,
+          nombreAvis: nombreAvis,
         });
 
         outilsAvecAvis++;
@@ -314,9 +439,8 @@ const syncMoyennes = async (req, res) => {
       message: "Migration des moyennes terminée avec succès",
       outilsMisAJour: updateResult.modifiedCount,
       outilsAvecMoyennes: outilsAvecAvis,
-      totalOutils: outils.length
+      totalOutils: outils.length,
     });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -328,7 +452,7 @@ const cleanupData = async (req, res) => {
 
     res.status(200).json({
       message: "Nettoyage terminé avec succès",
-      avisOrphelinsSupprimes: result.deletedCount
+      avisOrphelinsSupprimes: result.deletedCount,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -337,6 +461,7 @@ const cleanupData = async (req, res) => {
 
 const outils = {
   getManyOutils,
+  searchOutils,
   getByIdOutils,
   getOutilCategories,
   postOutils,
@@ -346,7 +471,7 @@ const outils = {
   deleteByIdOutils,
   syncAvisToOutils,
   syncMoyennes,
-    cleanupData
+  cleanupData,
 };
 
 module.exports = outils;

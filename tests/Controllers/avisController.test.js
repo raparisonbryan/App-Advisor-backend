@@ -68,16 +68,15 @@ describe("AvisController", () => {
   });
 
   describe("getByIdAvis", () => {
-    it("should return review by ID successfully", async () => {
+    it("should return avis by ID successfully", async () => {
       const mockAvis = {
-        _id: "1",
+        _id: "507f1f77bcf86cd799439011",
+        message: "Test review",
         note: 15,
-        commentaire: "Excellent outil",
-        user: { _id: "1", name: "User 1" },
-        outils: { _id: "1", name: "Tool 1", imageURL: "url1" },
+        user: { _id: "user1", name: "Test User" },
+        outils: { _id: "outil1", name: "Test Tool" },
       };
-
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       avisModel.findById.mockReturnValue({
         populate: jest.fn().mockReturnValue({
@@ -87,12 +86,14 @@ describe("AvisController", () => {
 
       await avisController.getByIdAvis(req, res);
 
-      expect(avisModel.findById).toHaveBeenCalledWith("1");
+      expect(avisModel.findById).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011"
+      );
       expect(res.send).toHaveBeenCalledWith(mockAvis);
     });
 
-    it("should return 404 when review not found", async () => {
-      req.params = { id: "999" };
+    it("should return 404 when avis not found", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       avisModel.findById.mockReturnValue({
         populate: jest.fn().mockReturnValue({
@@ -107,8 +108,8 @@ describe("AvisController", () => {
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
-      const error = new Error("Invalid ObjectId");
+      req.params = { id: "507f1f77bcf86cd799439011" };
+      const error = new Error("Database error");
 
       avisModel.findById.mockReturnValue({
         populate: jest.fn().mockReturnValue({
@@ -118,23 +119,22 @@ describe("AvisController", () => {
 
       await avisController.getByIdAvis(req, res);
 
-      expectErrorResponse(res, 500, "Invalid ObjectId");
+      expectErrorResponse(res, 500, "Database error");
     });
   });
 
   describe("getAvisByOutilId", () => {
-    it("should return reviews by tool ID successfully", async () => {
+    it("should return avis by outil ID successfully", async () => {
       const mockAvis = [
         {
-          _id: "1",
+          _id: "avis1",
+          message: "Test review 1",
           note: 15,
-          commentaire: "Excellent outil",
-          user: { _id: "1", name: "User 1" },
-          outils: { _id: "1", name: "Tool 1", imageURL: "url1" },
+          user: { _id: "user1", name: "Test User" },
+          outils: { _id: "507f1f77bcf86cd799439011", name: "Test Tool" },
         },
       ];
-
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       avisModel.find.mockReturnValue({
         populate: jest.fn().mockReturnValue({
@@ -144,12 +144,14 @@ describe("AvisController", () => {
 
       await avisController.getAvisByOutilId(req, res);
 
-      expect(avisModel.find).toHaveBeenCalledWith({ outils: "1" });
+      expect(avisModel.find).toHaveBeenCalledWith({
+        outils: "507f1f77bcf86cd799439011",
+      });
       expect(res.send).toHaveBeenCalledWith(mockAvis);
     });
 
-    it("should return 404 when no reviews found for tool", async () => {
-      req.params = { id: "1" };
+    it("should return 404 when no avis found for outil", async () => {
+      req.params = { id: "507f1f77bcf86cd799439011" };
 
       avisModel.find.mockReturnValue({
         populate: jest.fn().mockReturnValue({
@@ -166,7 +168,7 @@ describe("AvisController", () => {
     });
 
     it("should handle database errors", async () => {
-      req.params = { id: "1" };
+      req.params = { id: "507f1f77bcf86cd799439011" };
       const error = new Error("Database error");
 
       avisModel.find.mockReturnValue({
