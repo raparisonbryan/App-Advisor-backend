@@ -5,13 +5,27 @@ const avisRouter = require("../../Routers/avisRouter");
 const outilsRouter = require("../../Routers/outilsRouter");
 const categoriesRouter = require("../../Routers/categoriesRouter");
 
+// Mock authentication middleware
 jest.mock("../../middleware/authJwt", () => ({
   verifyToken: jest.fn((req, res, next) => {
     req.userId = "test-user-id";
+    req.user = { _id: "test-user-id", Admin: true }; // Set user as admin for tests
     next();
   }),
-  isAdmin: jest.fn((req, res, next) => next()),
-  isModeratorOrAdmin: jest.fn((req, res, next) => next()),
+  isAdmin: jest.fn((req, res, next) => {
+    if (req.user && req.user.Admin) {
+      next();
+    } else {
+      res.status(403).json({ error: "Admin access required" });
+    }
+  }),
+  isModeratorOrAdmin: jest.fn((req, res, next) => {
+    if (req.user && (req.user.Admin || req.user.isModerator)) {
+      next();
+    } else {
+      res.status(403).json({ error: "Moderator or Admin access required" });
+    }
+  }),
 }));
 
 jest.mock("../../middleware/verifySignUp", () => ({
@@ -24,6 +38,17 @@ jest.mock("../../Models/UserModel");
 jest.mock("../../Models/Avis");
 jest.mock("../../Models/Outil");
 jest.mock("../../Models/Categorie");
+
+// Mock bcrypt and jwt for authentication
+jest.mock("bcrypt", () => ({
+  hash: jest.fn().mockResolvedValue("hashedPassword123"),
+  compare: jest.fn().mockResolvedValue(true),
+}));
+
+jest.mock("jsonwebtoken", () => ({
+  sign: jest.fn().mockReturnValue("mock-jwt-token"),
+  verify: jest.fn().mockReturnValue({ userId: "test-user-id" }),
+}));
 
 describe("Routes Integration Tests", () => {
   let app;

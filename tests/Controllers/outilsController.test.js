@@ -1,4 +1,3 @@
-const outilsController = require("../../Controllers/outilsController");
 const outilModel = require("../../Models/Outil");
 const avisModel = require("../../Models/Avis");
 const categorieModel = require("../../Models/Categorie");
@@ -13,6 +12,15 @@ jest.mock("../../Models/Outil");
 jest.mock("../../Models/Avis");
 jest.mock("../../Models/Categorie");
 jest.mock("../../utils/cleanup", () => ({ cleanupOrphanedAvis: jest.fn() }));
+
+// Mock mongoose startSession - this needs to be before requiring the controller
+const mockStartSession = jest.fn();
+jest.mock("mongoose", () => ({
+  startSession: mockStartSession,
+}));
+
+// Re-require the controller after mocking mongoose
+const outilsController = require("../../Controllers/outilsController");
 
 describe("OutilsController", () => {
   let req, res;
@@ -429,10 +437,6 @@ describe("OutilsController", () => {
   });
 });
 
-const { startSession } = require("mongoose");
-
-jest.mock("mongoose", () => ({ startSession: jest.fn() }));
-
 describe("OutilsController extended", () => {
   let req, res;
   beforeEach(() => {
@@ -502,7 +506,7 @@ describe("OutilsController extended", () => {
         commitTransaction: jest.fn(),
         endSession: jest.fn(),
       };
-      startSession.mockResolvedValue(session);
+      mockStartSession.mockResolvedValue(session);
 
       const outil = {
         _id: "507f1f77bcf86cd799439011",
@@ -551,7 +555,7 @@ describe("OutilsController extended", () => {
         commitTransaction: jest.fn(),
         endSession: jest.fn(),
       };
-      startSession.mockResolvedValue(session);
+      mockStartSession.mockResolvedValue(session);
 
       const error = new Error("Transaction failed");
       const sessionFn = jest.fn().mockRejectedValue(error);

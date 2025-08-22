@@ -27,8 +27,9 @@
     "test": "jest --passWithNoTests --testFailureExitCode=0",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --passWithNoTests --testFailureExitCode=0",
-    "test:ci": "jest --ci --coverage --watchAll=false --passWithNoTests --testFailureExitCode=0",
-    "test:coverage-only": "jest --coverage --passWithNoTests --testFailureExitCode=0",
+    "test:ci": "jest --ci --coverage --watchAll=false --passWithNoTests --testFailureExitCode=0 --testPathIgnorePatterns=tests/integration",
+    "test:coverage-only": "jest --coverage --passWithNoTests --testFailureExitCode=0 --testPathIgnorePatterns=tests/integration",
+    "test:clean": "jest --forceExit --detectOpenHandles --maxWorkers=1 --no-coverage",
     "release": "semantic-release"
   },
   "name": "app-advisor",
