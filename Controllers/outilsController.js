@@ -196,7 +196,28 @@ const updateOutilsById = async (request, response) => {
       });
     }
 
-    const input = request.body;
+    // Sanitize input, allow only permitted fields and block MongoDB operators
+    const allowedFields = ["name", "description", "categories", "imageURL"];
+    let safeInput = {};
+    for (let key of allowedFields) {
+      if (Object.prototype.hasOwnProperty.call(request.body, key)) {
+        // Disallow MongoDB operator injection: no '$'-prefixed keys or nested objects with $-operators
+        const value = request.body[key];
+        if (
+          typeof key === "string" && key.startsWith("$")
+        ) {
+          continue; // skip dangerous key
+        }
+        // For objects or arrays, ensure children don't have $-keys
+        if (
+          value && typeof value === "object" &&
+          Object.keys(value).some(subKey => typeof subKey === "string" && subKey.startsWith("$"))
+        ) {
+          continue; // skip dangerous object property
+        }
+        safeInput[key] = value;
+      }
+    }
     const oldOutil = await outilsModel.findById(id);
 
     if (!oldOutil) {
@@ -208,11 +229,11 @@ const updateOutilsById = async (request, response) => {
         const publicId = oldOutil.imageURL.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`outils/${publicId}`);
       }
-      input.imageURL = request.file.path;
+      safeInput.imageURL = request.file.path;
     }
 
     const result = await outilsModel
-      .findByIdAndUpdate(id, input, { new: true })
+      .findByIdAndUpdate(id, safeInput, { new: true })
       .populate("categories", "name imageURL");
 
     if (input.categories) {
