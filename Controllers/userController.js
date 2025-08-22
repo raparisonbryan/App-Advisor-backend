@@ -86,7 +86,7 @@ const deleteByIdUser = async (request, response) => {
 
 const signup = async (request, response) => {
   try {
-    let input = request.body;
+    const input = request.body;
     input.password = await bcrypt.hash(input.password, 10);
     const newUser = new userModel(input);
     const result = await newUser.save();
@@ -100,8 +100,8 @@ const signup = async (request, response) => {
 };
 
 const signin = async (request, response) => {
-  let input = request.body;
-  let userExist = await userModel.findOne({ email: input.email });
+  const input = request.body;
+  const userExist = await userModel.findOne({ email: input.email });
   if (!userExist) {
     return response.status(404).json({ msg: "Utilisateur introuvable" });
   }

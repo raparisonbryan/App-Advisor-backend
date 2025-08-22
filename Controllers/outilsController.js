@@ -32,7 +32,8 @@ const searchOutils = async (request, response) => {
         .json({ error: "Query parameter 'q' is required" });
     }
 
-    const searchRegex = new RegExp(q, "i");
+    const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const searchRegex = new RegExp(escapedQuery, "i");
     const result = await outilsModel
       .find({
         $or: [{ name: searchRegex }, { description: searchRegex }],
@@ -196,26 +197,21 @@ const updateOutilsById = async (request, response) => {
       });
     }
 
-    // Sanitize input, allow only permitted fields and block MongoDB operators
-    const allowedFields = ["name", "description", "categories", "imageURL"];
-    let safeInput = {};
-    for (let key of allowedFields) {
-      if (Object.prototype.hasOwnProperty.call(request.body, key)) {
-        // Disallow MongoDB operator injection: no '$'-prefixed keys or nested objects with $-operators
-        const value = request.body[key];
-        if (
-          typeof key === "string" && key.startsWith("$")
-        ) {
-          continue; // skip dangerous key
-        }
-        // For objects or arrays, ensure children don't have $-keys
-        if (
-          value && typeof value === "object" &&
-          Object.keys(value).some(subKey => typeof subKey === "string" && subKey.startsWith("$"))
-        ) {
-          continue; // skip dangerous object property
-        }
-        safeInput[key] = value;
+    // Valider et filtrer les données d'entrée pour éviter l'injection
+    const allowedFields = [
+      "name",
+      "description",
+      "imageURL",
+      "categories",
+      "url",
+      "tags",
+    ];
+    const sanitizedInput = {};
+
+    // Ne permettre que les champs autorisés
+    for (const field of allowedFields) {
+      if (request.body[field] !== undefined) {
+        sanitizedInput[field] = request.body[field];
       }
     }
     const oldOutil = await outilsModel.findById(id);
@@ -229,14 +225,14 @@ const updateOutilsById = async (request, response) => {
         const publicId = oldOutil.imageURL.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`outils/${publicId}`);
       }
-      safeInput.imageURL = request.file.path;
+      sanitizedInput.imageURL = request.file.path;
     }
 
     const result = await outilsModel
-      .findByIdAndUpdate(id, safeInput, { new: true })
+      .findByIdAndUpdate(id, sanitizedInput, { new: true })
       .populate("categories", "name imageURL");
 
-    if (input.categories) {
+    if (sanitizedInput.categories) {
       if (oldOutil.categories && oldOutil.categories.length > 0) {
         await Categorie.updateMany(
           { _id: { $in: oldOutil.categories } },
@@ -244,9 +240,9 @@ const updateOutilsById = async (request, response) => {
         );
       }
 
-      if (input.categories.length > 0) {
+      if (sanitizedInput.categories.length > 0) {
         await Categorie.updateMany(
-          { _id: { $in: input.categories } },
+          { _id: { $in: sanitizedInput.categories } },
           { $addToSet: { outils: id } }
         );
       }

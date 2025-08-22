@@ -245,7 +245,7 @@ const deleteByIdAvis = async (request, response) => {
   }
 };
 
-let avis = {
+const avis = {
   getManyAvis,
   getByIdAvis,
   postAvis,
