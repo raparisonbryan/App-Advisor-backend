@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/raparisonbryan/App-Advisor-backend/compare/v2.0.1...v2.0.2) (2025-09-04)
+
+
+### Bug Fixes
+
+* add final frontend link to fix cors ([e82d643](https://github.com/raparisonbryan/App-Advisor-backend/commit/e82d64300cf1f691d8905703e607c007f2d070cb))
+
 ## [2.0.1](https://github.com/raparisonbryan/App-Advisor-backend/compare/v2.0.0...v2.0.1) (2025-09-04)
 
 
