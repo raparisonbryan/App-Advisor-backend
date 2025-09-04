@@ -29,7 +29,7 @@ const corsOptions = {
     "https://app-advisor-frontend-production.up.railway.app",
     "https://app-advisor-llm-production.up.railway.app",
     "https://frontend-dev-developpment.up.railway.app",
-    "hub.app-advisor.fr",
+    "https://hub.app-advisor.fr",
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5005",
