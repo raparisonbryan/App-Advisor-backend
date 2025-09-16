@@ -22,6 +22,33 @@ router.get("/me", authJwt.verifyToken, user.getCurrentUser);
 
 /**
  * @swagger
+ * /user/me:
+ *   put:
+ *     summary: Met à jour le profil de l'utilisateur connecté
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profil utilisateur mis à jour avec succès
+ *       403:
+ *         description: Accès refusé
+ */
+router.put("/me", authJwt.verifyToken, user.updateOwnProfile);
+
+/**
+ * @swagger
  * /user/signup:
  *   post:
  *     summary: Inscrit un nouvel utilisateur à l'aide d'un middleware
@@ -230,7 +257,12 @@ router.get("/:id", user.getByIdUser);
  *       200:
  *         description: L'utilisateur a été mis à jour
  */
-router.put("/:id", authJwt.verifyToken, authJwt.isAdmin, user.putUserById);
+router.put(
+  "/:id",
+  authJwt.verifyToken,
+  authJwt.isOwnerOrAdmin,
+  user.putUserById
+);
 
 /**
  * @swagger

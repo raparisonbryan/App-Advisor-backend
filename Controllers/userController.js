@@ -233,6 +233,39 @@ const getCurrentUser = async (request, response) => {
   }
 };
 
+const updateOwnProfile = async (request, response) => {
+  try {
+    const input = request.body;
+
+    if (input.Admin !== undefined) {
+      delete input.Admin;
+    }
+
+    if (input.password) {
+      input.password = await bcrypt.hash(input.password, 10);
+    }
+
+    const result = await userModel.findByIdAndUpdate(request.userId, input, {
+      new: true,
+      select: "-password",
+    });
+
+    if (!result) {
+      return response.status(404).json({ error: "Utilisateur non trouvé" });
+    }
+
+    response.json({
+      _id: result._id,
+      name: result.name,
+      email: result.email,
+      Admin: result.Admin,
+      message: "Profil mis à jour avec succès",
+    });
+  } catch (error) {
+    response.status(500).json({ error: error.message });
+  }
+};
+
 const userController = {
   getManyUser,
   getByIdUser,
@@ -245,6 +278,7 @@ const userController = {
   signin,
   signup,
   getCurrentUser,
+  updateOwnProfile,
   refreshToken,
   logout,
 };
