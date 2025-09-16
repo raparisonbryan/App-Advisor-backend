@@ -137,4 +137,70 @@ describe("AuthJWT Middleware", () => {
       expect(next).not.toHaveBeenCalled();
     });
   });
+
+  describe("isOwnerOrAdmin", () => {
+    it("should call next() when user is admin", async () => {
+      const mockUser = { _id: "1", Admin: true };
+      User.findById.mockResolvedValue(mockUser);
+      req.params = { id: "2" };
+
+      await authJwt.isOwnerOrAdmin(req, res, next);
+
+      expect(User.findById).toHaveBeenCalledWith("1");
+      expect(next).toHaveBeenCalled();
+    });
+
+    it("should call next() when user is owner (not admin)", async () => {
+      const mockUser = { _id: "1", Admin: false };
+      User.findById.mockResolvedValue(mockUser);
+      req.params = { id: "1" };
+
+      await authJwt.isOwnerOrAdmin(req, res, next);
+
+      expect(User.findById).toHaveBeenCalledWith("1");
+      expect(next).toHaveBeenCalled();
+    });
+
+    it("should return 403 when user is not admin and not owner", async () => {
+      const mockUser = { _id: "1", Admin: false };
+      User.findById.mockResolvedValue(mockUser);
+      req.params = { id: "2" };
+
+      await authJwt.isOwnerOrAdmin(req, res, next);
+
+      expect(User.findById).toHaveBeenCalledWith("1");
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.send).toHaveBeenCalledWith({
+        message: "Vous ne pouvez modifier que votre propre profil!",
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 when user not found", async () => {
+      User.findById.mockResolvedValue(null);
+      req.params = { id: "1" };
+
+      await authJwt.isOwnerOrAdmin(req, res, next);
+
+      expect(User.findById).toHaveBeenCalledWith("1");
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.send).toHaveBeenCalledWith({
+        message: "Utilisateur non trouvé!",
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should handle database errors", async () => {
+      const error = new Error("Database error");
+      User.findById.mockRejectedValue(error);
+      req.params = { id: "1" };
+
+      await authJwt.isOwnerOrAdmin(req, res, next);
+
+      expect(User.findById).toHaveBeenCalledWith("1");
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith({ message: "Database error" });
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
 });

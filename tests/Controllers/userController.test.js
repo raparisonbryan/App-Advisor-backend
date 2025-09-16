@@ -527,4 +527,117 @@ describe("UserController", () => {
       expectErrorResponse(res, 500, "User not found");
     });
   });
+
+  describe("updateOwnProfile", () => {
+    it("should update user profile successfully", async () => {
+      const mockUser = {
+        _id: "user123",
+        name: "Updated User",
+        email: "updated@example.com",
+        Admin: false,
+      };
+
+      req.userId = "user123";
+      req.body = {
+        name: "Updated User",
+        email: "updated@example.com",
+      };
+
+      userModel.findByIdAndUpdate.mockResolvedValue(mockUser);
+
+      await userController.updateOwnProfile(req, res);
+
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        "user123",
+        { name: "Updated User", email: "updated@example.com" },
+        { new: true, select: "-password" }
+      );
+      expect(res.json).toHaveBeenCalledWith({
+        _id: "user123",
+        name: "Updated User",
+        email: "updated@example.com",
+        Admin: false,
+        message: "Profil mis à jour avec succès",
+      });
+    });
+
+    it("should hash password when provided", async () => {
+      const mockUser = {
+        _id: "user123",
+        name: "Test User",
+        email: "test@example.com",
+        Admin: false,
+      };
+
+      req.userId = "user123";
+      req.body = {
+        name: "Test User",
+        password: "newpassword123",
+      };
+
+      bcrypt.hash.mockResolvedValue("hashedpassword");
+      userModel.findByIdAndUpdate.mockResolvedValue(mockUser);
+
+      await userController.updateOwnProfile(req, res);
+
+      expect(bcrypt.hash).toHaveBeenCalledWith("newpassword123", 10);
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        "user123",
+        { name: "Test User", password: "hashedpassword" },
+        { new: true, select: "-password" }
+      );
+    });
+
+    it("should remove Admin field from input", async () => {
+      const mockUser = {
+        _id: "user123",
+        name: "Test User",
+        email: "test@example.com",
+        Admin: false,
+      };
+
+      req.userId = "user123";
+      req.body = {
+        name: "Test User",
+        Admin: true, // This should be removed
+      };
+
+      userModel.findByIdAndUpdate.mockResolvedValue(mockUser);
+
+      await userController.updateOwnProfile(req, res);
+
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        "user123",
+        { name: "Test User" },
+        { new: true, select: "-password" }
+      );
+    });
+
+    it("should return 404 when user not found", async () => {
+      req.userId = "user123";
+      req.body = { name: "Test User" };
+
+      userModel.findByIdAndUpdate.mockResolvedValue(null);
+
+      await userController.updateOwnProfile(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Utilisateur non trouvé",
+      });
+    });
+
+    it("should handle errors in updateOwnProfile", async () => {
+      req.userId = "user123";
+      req.body = { name: "Test User" };
+
+      userModel.findByIdAndUpdate.mockRejectedValue(
+        new Error("Database error")
+      );
+
+      await userController.updateOwnProfile(req, res);
+
+      expectErrorResponse(res, 500, "Database error");
+    });
+  });
 });
