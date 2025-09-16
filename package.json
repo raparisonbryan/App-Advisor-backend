@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "axios": "1.11.0",
+    "axios": "^1.12.2",
     "bcrypt": "^5.1.1",
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
@@ -40,18 +40,23 @@
   "license": "ISC",
   "description": "",
   "release": {
-    "branches": ["main"],
+    "branches": [
+      "main"
+    ],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
       "@semantic-release/git",
-      ["@semantic-release/github", {
-        "successComment": false,
-        "failTitle": false,
-        "failComment": false,
-        "labels": false
-      }]
+      [
+        "@semantic-release/github",
+        {
+          "successComment": false,
+          "failTitle": false,
+          "failComment": false,
+          "labels": false
+        }
+      ]
     ]
   },
   "devDependencies": {
